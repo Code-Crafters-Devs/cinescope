@@ -1,4 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faAngleUp, faAngleDown } from '@fortawesome/free-solid-svg-icons'; 
+
 
 function LandPage() {
     const [movies, setMovies] = useState([]);
@@ -11,6 +14,12 @@ function LandPage() {
     const [isPlayingBackgroundTrailer, setIsPlayingBackgroundTrailer] = useState(false);
     const [featuredTrailerKey, setFeaturedTrailerKey] = useState(null);
     const [showVideoGallery, setShowVideoGallery] = useState(false);
+    const [isOpen, setIsOpen] = useState(false);
+    const categories = ["Action", "Comedy", "Animation", "Horror", "Romantic"];
+  
+    const toggleDropdown = () => {
+        setIsOpen(!isOpen);
+    }   
 
     const fetchMovies = useCallback(async () => {
         try {
@@ -158,7 +167,7 @@ function LandPage() {
                     alignItems: 'center',
                     gap: '10px'
                 }}>
-                    <span>CodeCraftersMovies</span>
+                    <span>CineScope</span>
                 </div>
                 
                 <div style={{ 
@@ -203,15 +212,58 @@ function LandPage() {
                         }}>
                             Sign In
                         </button>
-                        <button style={{
-                            background: 'none',
-                            border: 'none',
-                            color: 'white',
-                            fontSize: '1.5rem',
-                            cursor: 'pointer'
-                        }}>
-                            ☰
+                        <div style={{ position: 'relative' }}>
+                        <button
+                            onClick={toggleDropdown}
+                            style={{
+                                background: 'red',
+                                border: 'none',
+                                color: 'white',
+                                padding: '8px 20px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                fontWeight: 'bold',
+                                gap: '15px',
+                                alignItems: 'center',
+                                borderRadius: '4px',
+                            }}
+                        >
+                            Categories {isOpen ? <FontAwesomeIcon icon={faAngleUp} /> : <FontAwesomeIcon icon={faAngleDown} />}
                         </button>
+                            {isOpen && (
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    right: 0,
+                                    backgroundColor: '#2c2c44',
+                                    borderRadius: '4px',
+                                    width: '180px',
+                                    boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+                                    zIndex: 1000,
+                                    marginTop: '10px'
+                                }}>
+                                    {categories.map((category) => (
+                                        <div 
+                                            key={category}
+                                            style={{
+                                                padding: '12px 20px',
+                                                cursor: 'pointer',
+                                                borderBottom: '1px solid #3e3e5e',
+                                                transition: 'background-color 0.2s'
+                                            }}
+                                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3e3e5e'}
+                                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                            onClick={() => {
+                                                console.log(`Selected category: ${category}`);
+                                                toggleDropdown();
+                                            }}
+                                        >
+                                            {category}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>
