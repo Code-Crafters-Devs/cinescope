@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleUp, faAngleDown } from '@fortawesome/free-solid-svg-icons'; 
+import { faAngleUp, faAngleDown, faSearch } from '@fortawesome/free-solid-svg-icons'; 
 import TrailerPage from '../components/movies/MovieDetails.jsx';
 
 function LandPage() {
     const [movies, setMovies] = useState([]);
+    const [filteredMovies, setFilteredMovies] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
@@ -15,53 +16,12 @@ function LandPage() {
     const [showVideoGallery, setShowVideoGallery] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
     const [isHovering, setIsHovering] = useState(false);
-    const [showTrailerPage, setShowTrailerPage] = useState(false); // New state for showing trailer page
-    const [selectedMovie, setSelectedMovie] = useState(null); // New state for the selected movie
+    const [showTrailerPage, setShowTrailerPage] = useState(false);
+    const [selectedMovie, setSelectedMovie] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
     const categories = ["Action", "Comedy", "Animation", "Horror", "Romantic"];
-  
-    const toggleDropdown = () => {
-        setIsOpen(!isOpen);
-    }   
 
-    const fetchMovies = useCallback(async () => {
-        try {
-            setLoading(true);
-            const response = await fetch(
-                `https://api.themoviedb.org/3/movie/popular?api_key=02d2d30e38f07e116dd9f4ec122a4a27&language=en-US&page=${page}`
-            );
-            const data = await response.json();
-            setTotalPages(data.total_pages);
-            
-            // Filter out any movie with "Minecraft" in the title
-            const filteredResults = data.results.filter(movie => 
-                !movie.title.toLowerCase().includes('minecraft')
-            );
-            
-            if (page === 1) {
-                // For the first page, we only take 12 movies
-                const moviesToShow = filteredResults.slice(0, 12);
-                setMovies(moviesToShow);
-                
-                // Set the first non-Minecraft movie as featured
-                if (moviesToShow.length > 0) {
-                    const firstMovie = moviesToShow[0];
-                    setFeaturedMovie(firstMovie);
-                    
-                    // Fetch videos for the featured movie
-                    fetchMovieVideos(firstMovie.id, true);
-                }
-            } else {
-                // For subsequent pages, append filtered results
-                setMovies(prev => [...prev, ...filteredResults.slice(0, 12)]);
-            }
-            setLoading(false);
-        } catch (error) {
-            console.error("Error fetching movies:", error);
-            setLoading(false);
-        }
-    }, [page]);
-
-    const fetchMovieVideos = async (movieId, isFeatured = false) => {
+    const fetchMovieVideos = useCallback(async (movieId, isFeatured = false) => {
         try {
             const response = await fetch(
                 `https://api.themoviedb.org/3/movie/${movieId}/videos?api_key=02d2d30e38f07e116dd9f4ec122a4a27`
@@ -72,7 +32,6 @@ function LandPage() {
             if (isFeatured) {
                 setFeaturedMovieVideos(videos);
                 
-                // Find trailer for the featured movie
                 const trailer = videos.find(vid => vid.type === "Trailer" && vid.site === "YouTube");
                 if (trailer) {
                     setFeaturedTrailerKey(trailer.key);
@@ -84,9 +43,58 @@ function LandPage() {
             console.error("Error fetching videos:", error);
             return [];
         }
+    }, []);
+
+    const fetchMovies = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await fetch(
+                `https://api.themoviedb.org/3/movie/popular?api_key=02d2d30e38f07e116dd9f4ec122a4a27&language=en-US&page=${page}`
+            );
+            const data = await response.json();
+            setTotalPages(data.total_pages);
+            
+            const filteredResults = data.results.filter(movie => 
+                !movie.title.toLowerCase().includes('minecraft')
+            );
+            
+            if (page === 1) {
+                const moviesToShow = filteredResults.slice(0, 12);
+                setMovies(moviesToShow);
+                setFilteredMovies(moviesToShow);
+                
+                if (moviesToShow.length > 0) {
+                    const firstMovie = moviesToShow[0];
+                    setFeaturedMovie(firstMovie);
+                    fetchMovieVideos(firstMovie.id, true);
+                }
+            } else {
+                setMovies(prev => [...prev, ...filteredResults.slice(0, 12)]);
+                setFilteredMovies(prev => [...prev, ...filteredResults.slice(0, 12)]);
+            }
+            setLoading(false);
+        } catch (error) {
+            console.error("Error fetching movies:", error);
+            setLoading(false);
+        }
+    }, [page, fetchMovieVideos]);
+
+    const toggleDropdown = () => {
+        setIsOpen(!isOpen);
     };
 
-    // Modified to show the trailer page
+    const handleSearch = (query) => {
+        setSearchQuery(query);
+        if (query.trim() === '') {
+            setFilteredMovies(movies);
+        } else {
+            const filtered = movies.filter(movie =>
+                movie.title.toLowerCase().includes(query.toLowerCase())
+            );
+            setFilteredMovies(filtered);
+        }
+    };
+
     const playTrailer = async (movie) => {
         const videos = await fetchMovieVideos(movie.id);
         const trailer = videos.find(vid => vid.type === "Trailer" && vid.site === "YouTube");
@@ -97,15 +105,10 @@ function LandPage() {
         }
     };
 
-    // Function to close the trailer page
     const closeTrailerPage = () => {
         setShowTrailerPage(false);
         setTrailerUrl(null);
     };
-
-    useEffect(() => {
-        fetchMovies();
-    }, [fetchMovies]);
 
     const loadMoreMovies = () => {
         if (page < totalPages) {
@@ -117,7 +120,6 @@ function LandPage() {
         setShowVideoGallery(!showVideoGallery);
     };
 
-    // Handle mouse enter/leave for the featured movie section
     const handleMouseEnter = () => {
         setIsHovering(true);
     };
@@ -126,17 +128,18 @@ function LandPage() {
         setIsHovering(false);
     };
 
-    // Function to update featured movie while ensuring it's not Minecraft
     const updateFeaturedMovie = (movie) => {
         if (!movie.title.toLowerCase().includes('minecraft')) {
             setFeaturedMovie(movie);
             fetchMovieVideos(movie.id, true);
-            // Scroll to top to see featured movie
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
 
-    // If showing trailer page, render the TrailerPage component
+    useEffect(() => {
+        fetchMovies();
+    }, [fetchMovies]);
+
     if (showTrailerPage && selectedMovie && trailerUrl) {
         return <TrailerPage 
             movie={selectedMovie} 
@@ -144,10 +147,9 @@ function LandPage() {
             trailerKey={trailerUrl} 
         />;
     }
-    
+
     return (
         <div className="landPage" style={{ backgroundColor: '#0f0f1a', minHeight: '100vh', color: 'white' }}>
-            {/* Trailer Modal - We'll keep this for playing videos from the video gallery */}
             {trailerUrl && !showTrailerPage && (
                 <div style={{
                     position: 'fixed',
@@ -192,7 +194,6 @@ function LandPage() {
                 </div>
             )}
 
-            {/* Top Navigation Bar */}
             <div style={{
                 display: 'flex',
                 justifyContent: 'space-between',
@@ -210,54 +211,67 @@ function LandPage() {
                     color: '#e50914',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px'
+                    gap: '10px',
+                    flex: 1
                 }}>
                     <span>CineScope</span>
                 </div>
                 
                 <div style={{ 
                     display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '20px' 
+                    justifyContent: 'center',
+                    flex: 1
                 }}>
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', width: '100%', maxWidth: '500px' }}>
                         <input 
                             type="text" 
-                            placeholder="Search..." 
+                            placeholder="Search movies..." 
+                            value={searchQuery}
+                            onChange={(e) => handleSearch(e.target.value)}
                             style={{
-                                padding: '8px 15px 8px 35px',
+                                padding: '8px 35px 8px 15px',
                                 borderRadius: '20px',
                                 border: 'none',
-                                width: '300px',
+                                width: '100%',
                                 backgroundColor: '#2c2c44',
-                                color: 'white'
+                                color: 'white',
+                                outline: 'none'
                             }}
                         />
-                        <span style={{
-                            position: 'absolute',
-                            left: '10px',
-                            top: '50%',
-                            transform: 'translateY(-50%)',
-                            color: '#aaa'
-                        }}>
-                            🔍
-                        </span>
+                        <FontAwesomeIcon 
+                            icon={faSearch} 
+                            style={{
+                                position: 'absolute',
+                                right: '15px',
+                                top: '50%',
+                                transform: 'translateY(-50%)',
+                                color: '#aaa',
+                                cursor: 'pointer'
+                            }}
+                        />
                     </div>
-                    
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                        <button style={{
-                            backgroundColor: '#e50914',
-                            color: 'white',
-                            border: 'none',
-                            padding: '8px 20px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            fontWeight: 'bold',
-                            transition: 'all 0.3s ease'
-                        }}>
-                            Sign In
-                        </button>
-                        <div style={{ position: 'relative' }}>
+                </div>
+
+                <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '15px',
+                    justifyContent: 'flex-end',
+                    flex: 1
+                }}>
+                    <button style={{
+                        backgroundColor: '#e50914',
+                        color: 'white',
+                        border: 'none',
+                        padding: '8px 20px',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        transition: 'all 0.3s ease'
+                    }}>
+                        Sign In
+                    </button>
+                    <div style={{ position: 'relative' }}>
                         <button
                             onClick={toggleDropdown}
                             style={{
@@ -275,47 +289,44 @@ function LandPage() {
                         >
                             Categories {isOpen ? <FontAwesomeIcon icon={faAngleUp} /> : <FontAwesomeIcon icon={faAngleDown} />}
                         </button>
-                            {isOpen && (
-                                <div style={{
-                                    position: 'absolute',
-                                    top: '100%',
-                                    right: 0,
-                                    backgroundColor: '#2c2c44',
-                                    borderRadius: '4px',
-                                    width: '180px',
-                                    boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
-                                    zIndex: 1000,
-                                    marginTop: '10px'
-                                }}>
-                                    {categories.map((category) => (
-                                        <div 
-                                            key={category}
-                                            style={{
-                                                padding: '12px 20px',
-                                                cursor: 'pointer',
-                                                borderBottom: '1px solid #3e3e5e',
-                                                transition: 'background-color 0.2s'
-                                            }}
-                                            onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3e3e5e'}
-                                            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                                            onClick={() => {
-                                                console.log(`Selected category: ${category}`);
-                                                toggleDropdown();
-                                            }}
-                                        >
-                                            {category}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
+                        {isOpen && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '100%',
+                                right: 0,
+                                backgroundColor: '#2c2c44',
+                                borderRadius: '4px',
+                                width: '180px',
+                                boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+                                zIndex: 1000,
+                                marginTop: '10px'
+                            }}>
+                                {categories.map((category) => (
+                                    <div 
+                                        key={category}
+                                        style={{
+                                            padding: '12px 20px',
+                                            cursor: 'pointer',
+                                            borderBottom: '1px solid #3e3e5e',
+                                            transition: 'background-color 0.2s'
+                                        }}
+                                        onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3e3e5e'}
+                                        onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                                        onClick={() => {
+                                            console.log(`Selected category: ${category}`);
+                                            toggleDropdown();
+                                        }}
+                                    >
+                                        {category}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
-            
-            {/* Main Content */}
+
             <div style={{ padding: '20px 30px' }}>
-                {/* Featured Movie Section */}
                 <section 
                     style={{
                         position: 'relative',
@@ -329,7 +340,6 @@ function LandPage() {
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
                 >
-                    {/* Background Image or Trailer */}
                     {isHovering && featuredTrailerKey ? (
                         <div style={{
                             position: 'absolute',
@@ -351,7 +361,7 @@ function LandPage() {
                                     top: '-60px',
                                     left: 0,
                                     width: '100%',
-                                    height: 'calc(100% + 120px)', // Make it bigger to cover the section
+                                    height: 'calc(100% + 120px)',
                                     objectFit: 'cover',
                                     pointerEvents: 'none'
                                 }}
@@ -373,7 +383,6 @@ function LandPage() {
                         }}></div>
                     )}
                     
-                    {/* Dark Overlay */}
                     <div style={{
                         position: 'absolute',
                         width: '100%',
@@ -384,7 +393,6 @@ function LandPage() {
                         zIndex: 2
                     }}></div>
                     
-                    {/* Featured Movie Content */}
                     <div style={{
                         maxWidth: '600px',
                         padding: '40px',
@@ -453,7 +461,6 @@ function LandPage() {
                     </div>
                 </section>
                 
-                {/* Video Gallery Section - Using featuredMovieVideos */}
                 {showVideoGallery && featuredMovieVideos.length > 0 && (
                     <section style={{
                         padding: '20px',
@@ -487,7 +494,7 @@ function LandPage() {
                                 >
                                     <div style={{
                                         position: 'relative',
-                                        paddingBottom: '56.25%', // 16:9 aspect ratio
+                                        paddingBottom: '56.25%',
                                         height: 0
                                     }}>
                                         <img 
@@ -543,7 +550,6 @@ function LandPage() {
                     </section>
                 )}
                 
-                {/* Featured Movies Grid */}
                 <section>
                     <div style={{ 
                         display: 'flex', 
@@ -551,93 +557,110 @@ function LandPage() {
                         alignItems: 'center',
                         margin: '30px 0 20px 0'
                     }}>
-                        <h3 style={{ fontSize: '1.5rem' }}>Featured Movies</h3>
-                        <button 
-                            onClick={loadMoreMovies}
-                            disabled={loading || page >= totalPages}
-                            style={{ 
-                                background: 'none',
-                                border: 'none',
-                                color: page >= totalPages ? '#666' : '#e50914',
-                                fontWeight: 'bold',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                cursor: page >= totalPages ? 'default' : 'pointer',
-                                padding: 0,
-                                fontSize: 'inherit',
-                                opacity: page >= totalPages ? 0.7 : 1
-                            }}
-                        >
-                            {loading ? 'Loading...' : 'See more'} <span style={{ fontSize: '1.2rem' }}>→</span>
-                        </button>
+                        <h3 style={{ fontSize: '1.5rem' }}>
+                            {searchQuery ? `Search Results for "${searchQuery}"` : 'Featured Movies'}
+                        </h3>
+                        {!searchQuery && (
+                            <button 
+                                onClick={loadMoreMovies}
+                                disabled={loading || page >= totalPages}
+                                style={{ 
+                                    background: 'none',
+                                    border: 'none',
+                                    color: page >= totalPages ? '#666' : '#e50914',
+                                    fontWeight: 'bold',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                    cursor: page >= totalPages ? 'default' : 'pointer',
+                                    padding: 0,
+                                    fontSize: 'inherit',
+                                    opacity: page >= totalPages ? 0.7 : 1
+                                }}
+                            >
+                                {loading ? 'Loading...' : 'See more'} <span style={{ fontSize: '1.2rem' }}>→</span>
+                            </button>
+                        )}
                     </div>
                     
-                    {/* Movies Grid */}
                     <div style={{
                         display: 'grid',
                         gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
                         gap: '25px',
                         padding: '10px 0'
                     }}>
-                        {movies.map((movie) => (
-                            <div 
-                                key={movie.id}
-                                style={{
-                                    borderRadius: '8px',
-                                    overflow: 'hidden',
-                                    transition: 'transform 0.3s ease',
-                                    cursor: 'pointer',
-                                    ':hover': {
-                                        transform: 'scale(1.05)'
-                                    }
-                                }}
-                                onClick={() => updateFeaturedMovie(movie)}
-                            >
-                                <img 
-                                    src={movie.poster_path 
-                                        ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                                        : 'https://via.placeholder.com/180x270?text=No+Poster'}
-                                    alt={movie.title}
+                        {filteredMovies.length > 0 ? (
+                            filteredMovies.map((movie) => (
+                                <div 
+                                    key={movie.id}
                                     style={{
-                                        width: '100%',
-                                        height: '270px',
-                                        objectFit: 'cover',
                                         borderRadius: '8px',
-                                        border: '1px solid #333'
-                                    }}
-                                />
-                                <div style={{ padding: '12px 5px' }}>
-                                    <h4 style={{ 
-                                        margin: '0 0 5px 0', 
-                                        fontSize: '0.95rem',
-                                        whiteSpace: 'nowrap',
                                         overflow: 'hidden',
-                                        textOverflow: 'ellipsis'
-                                    }}>
-                                        {movie.title}
-                                    </h4>
-                                    <div style={{ 
-                                        display: 'flex', 
-                                        justifyContent: 'space-between',
-                                        fontSize: '0.85rem'
-                                    }}>
-                                        <span style={{ color: '#aaa' }}>
-                                            {movie.release_date?.split('-')[0] || 'N/A'}
-                                        </span>
-                                        <span style={{ 
-                                            color: '#FFD700',
-                                            fontWeight: 'bold'
+                                        transition: 'transform 0.3s ease',
+                                        cursor: 'pointer',
+                                        ':hover': {
+                                            transform: 'scale(1.05)'
+                                        }
+                                    }}
+                                    onClick={() => updateFeaturedMovie(movie)}
+                                >
+                                    <img 
+                                        src={movie.poster_path 
+                                            ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                                            : 'https://via.placeholder.com/180x270?text=No+Poster'}
+                                        alt={movie.title}
+                                        style={{
+                                            width: '100%',
+                                            height: '270px',
+                                            objectFit: 'cover',
+                                            borderRadius: '8px',
+                                            border: '1px solid #333'
+                                        }}
+                                    />
+                                    <div style={{ padding: '12px 5px' }}>
+                                        <h4 style={{ 
+                                            margin: '0 0 5px 0', 
+                                            fontSize: '0.95rem',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
                                         }}>
-                                            ★ {movie.vote_average?.toFixed(1) || '0.0'}
-                                        </span>
+                                            {movie.title}
+                                        </h4>
+                                        <div style={{ 
+                                            display: 'flex', 
+                                            justifyContent: 'space-between',
+                                            fontSize: '0.85rem'
+                                        }}>
+                                            <span style={{ color: '#aaa' }}>
+                                                {movie.release_date?.split('-')[0] || 'N/A'}
+                                            </span>
+                                            <span style={{ 
+                                                color: '#FFD700',
+                                                fontWeight: 'bold'
+                                            }}>
+                                                ★ {movie.vote_average?.toFixed(1) || '0.0'}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
+                            ))
+                        ) : (
+                            <div style={{ 
+                                gridColumn: '1 / -1',
+                                textAlign: 'center',
+                                padding: '40px',
+                                color: '#aaa'
+                            }}>
+                                {searchQuery ? 
+                                    `No movies found matching "${searchQuery}"` : 
+                                    'No movies available'
+                                }
                             </div>
-                        ))}
+                        )}
                     </div>
 
-                    {loading && (
+                    {loading && !searchQuery && (
                         <div style={{ 
                             color: 'white', 
                             textAlign: 'center', 
