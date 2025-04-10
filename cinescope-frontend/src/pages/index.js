@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleUp, faAngleDown } from '@fortawesome/free-solid-svg-icons'; 
-
+import TrailerPage from '../components/movies/MovieDetails.jsx';
 
 function LandPage() {
     const [movies, setMovies] = useState([]);
@@ -11,10 +11,12 @@ function LandPage() {
     const [trailerUrl, setTrailerUrl] = useState(null);
     const [featuredMovie, setFeaturedMovie] = useState(null);
     const [featuredMovieVideos, setFeaturedMovieVideos] = useState([]);
-    const [isPlayingBackgroundTrailer, setIsPlayingBackgroundTrailer] = useState(false);
     const [featuredTrailerKey, setFeaturedTrailerKey] = useState(null);
     const [showVideoGallery, setShowVideoGallery] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
+    const [isHovering, setIsHovering] = useState(false);
+    const [showTrailerPage, setShowTrailerPage] = useState(false); // New state for showing trailer page
+    const [selectedMovie, setSelectedMovie] = useState(null); // New state for the selected movie
     const categories = ["Action", "Comedy", "Animation", "Horror", "Romantic"];
   
     const toggleDropdown = () => {
@@ -30,17 +32,27 @@ function LandPage() {
             const data = await response.json();
             setTotalPages(data.total_pages);
             
+            // Filter out any movie with "Minecraft" in the title
+            const filteredResults = data.results.filter(movie => 
+                !movie.title.toLowerCase().includes('minecraft')
+            );
+            
             if (page === 1) {
-                setMovies(data.results.slice(0, 12));
+                // For the first page, we only take 12 movies
+                const moviesToShow = filteredResults.slice(0, 12);
+                setMovies(moviesToShow);
                 
-                // Set the first movie as featured
-                const firstMovie = data.results[0];
-                setFeaturedMovie(firstMovie);
-                
-                // Fetch videos for the featured movie
-                fetchMovieVideos(firstMovie.id, true);
+                // Set the first non-Minecraft movie as featured
+                if (moviesToShow.length > 0) {
+                    const firstMovie = moviesToShow[0];
+                    setFeaturedMovie(firstMovie);
+                    
+                    // Fetch videos for the featured movie
+                    fetchMovieVideos(firstMovie.id, true);
+                }
             } else {
-                setMovies(prev => [...prev, ...data.results.slice(0, 12)]);
+                // For subsequent pages, append filtered results
+                setMovies(prev => [...prev, ...filteredResults.slice(0, 12)]);
             }
             setLoading(false);
         } catch (error) {
@@ -74,12 +86,21 @@ function LandPage() {
         }
     };
 
-    const playTrailer = async (movieId) => {
-        const videos = await fetchMovieVideos(movieId);
+    // Modified to show the trailer page
+    const playTrailer = async (movie) => {
+        const videos = await fetchMovieVideos(movie.id);
         const trailer = videos.find(vid => vid.type === "Trailer" && vid.site === "YouTube");
         if (trailer) {
             setTrailerUrl(trailer.key);
+            setSelectedMovie(movie);
+            setShowTrailerPage(true);
         }
+    };
+
+    // Function to close the trailer page
+    const closeTrailerPage = () => {
+        setShowTrailerPage(false);
+        setTrailerUrl(null);
     };
 
     useEffect(() => {
@@ -92,18 +113,42 @@ function LandPage() {
         }
     };
 
-    const toggleBackgroundTrailer = () => {
-        setIsPlayingBackgroundTrailer(!isPlayingBackgroundTrailer);
-    };
-
     const toggleVideoGallery = () => {
         setShowVideoGallery(!showVideoGallery);
     };
 
+    // Handle mouse enter/leave for the featured movie section
+    const handleMouseEnter = () => {
+        setIsHovering(true);
+    };
+
+    const handleMouseLeave = () => {
+        setIsHovering(false);
+    };
+
+    // Function to update featured movie while ensuring it's not Minecraft
+    const updateFeaturedMovie = (movie) => {
+        if (!movie.title.toLowerCase().includes('minecraft')) {
+            setFeaturedMovie(movie);
+            fetchMovieVideos(movie.id, true);
+            // Scroll to top to see featured movie
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    };
+
+    // If showing trailer page, render the TrailerPage component
+    if (showTrailerPage && selectedMovie && trailerUrl) {
+        return <TrailerPage 
+            movie={selectedMovie} 
+            onBack={closeTrailerPage} 
+            trailerKey={trailerUrl} 
+        />;
+    }
+    
     return (
         <div className="landPage" style={{ backgroundColor: '#0f0f1a', minHeight: '100vh', color: 'white' }}>
-            {/* Trailer Modal */}
-            {trailerUrl && (
+            {/* Trailer Modal - We'll keep this for playing videos from the video gallery */}
+            {trailerUrl && !showTrailerPage && (
                 <div style={{
                     position: 'fixed',
                     top: 0,
@@ -271,17 +316,21 @@ function LandPage() {
             {/* Main Content */}
             <div style={{ padding: '20px 30px' }}>
                 {/* Featured Movie Section */}
-                <section style={{
-                    position: 'relative',
-                    borderRadius: '8px',
-                    margin: '20px 0',
-                    minHeight: '70vh',
-                    display: 'flex',
-                    alignItems: 'center',
-                    overflow: 'hidden'
-                }}>
+                <section 
+                    style={{
+                        position: 'relative',
+                        borderRadius: '8px',
+                        margin: '20px 0',
+                        minHeight: '70vh',
+                        display: 'flex',
+                        alignItems: 'center',
+                        overflow: 'hidden'
+                    }}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                >
                     {/* Background Image or Trailer */}
-                    {isPlayingBackgroundTrailer && featuredTrailerKey ? (
+                    {isHovering && featuredTrailerKey ? (
                         <div style={{
                             position: 'absolute',
                             width: '100%',
@@ -365,7 +414,7 @@ function LandPage() {
                             <button 
                                 onClick={() => {
                                     if (featuredMovie) {
-                                        playTrailer(featuredMovie.id);
+                                        playTrailer(featuredMovie);
                                     }
                                 }}
                                 style={{
@@ -380,23 +429,7 @@ function LandPage() {
                                     fontWeight: 'bold'
                                 }}
                             >
-                                WATCH TRAILER
-                            </button>
-                            <button 
-                                onClick={toggleBackgroundTrailer}
-                                style={{
-                                    backgroundColor: 'rgba(255,255,255,0.2)',
-                                    color: 'white',
-                                    border: '2px solid white',
-                                    padding: '12px 30px',
-                                    fontSize: '1rem',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    transition: 'background-color 0.3s',
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                {isPlayingBackgroundTrailer ? 'STOP BACKGROUND' : 'PLAY IN BACKGROUND'}
+                                VIEW TRAILER
                             </button>
                             {featuredMovieVideos.length > 0 && (
                                 <button 
@@ -559,12 +592,7 @@ function LandPage() {
                                         transform: 'scale(1.05)'
                                     }
                                 }}
-                                onClick={() => {
-                                    setFeaturedMovie(movie);
-                                    fetchMovieVideos(movie.id, true);
-                                    // Scroll to top to see featured movie
-                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                }}
+                                onClick={() => updateFeaturedMovie(movie)}
                             >
                                 <img 
                                     src={movie.poster_path 
