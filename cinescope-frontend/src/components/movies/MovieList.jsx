@@ -196,30 +196,6 @@ const MovieList = ({ category, apiEndpoint }) => {
                         />
                     </div>
                 </div>
-
-                <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '15px',
-                    justifyContent: 'flex-end',
-                    flex: 1
-                }}>
-                    <button style={{
-                        backgroundColor: '#e50914',
-                        color: 'white',
-                        border: 'none',
-                        padding: '8px 20px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        transition: 'all 0.3s ease',
-                        ':hover': {
-                            backgroundColor: '#f40612'
-                        }
-                    }}>
-                        Sign In
-                    </button>
-                </div>
             </div>
 
             {/* Main Content */}

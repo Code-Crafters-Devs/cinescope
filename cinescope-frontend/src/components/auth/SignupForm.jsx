@@ -42,7 +42,7 @@ function SignupForm() {
     e.preventDefault();
     if (validateForm()) {
       console.log("Form submitted:", formData);
-      navigate('/login'); // Redirect after successful signup
+      navigate('/home'); // Redirect after successful signup
     }
   };
 
