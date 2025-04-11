@@ -4,6 +4,7 @@ import { faAngleUp, faAngleDown, faSearch } from '@fortawesome/free-solid-svg-ic
 import MovieDetails from '../components/movies/MovieDetails.jsx';
 import { useNavigate } from 'react-router-dom';
 
+
 function LandPage() {
     const [movies, setMovies] = useState([]);
     const [filteredMovies, setFilteredMovies] = useState([]);
@@ -260,16 +261,19 @@ function LandPage() {
                     justifyContent: 'flex-end',
                     flex: 1
                 }}>
-                    <button style={{
-                        backgroundColor: '#e50914',
-                        color: 'white',
-                        border: 'none',
-                        padding: '8px 20px',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        fontWeight: 'bold',
-                        transition: 'all 0.3s ease'
-                    }}>
+                    <button 
+                        style={{
+                            backgroundColor: '#e50914',
+                            color: 'white',
+                            border: 'none',
+                            padding: '8px 20px',
+                            borderRadius: '4px',
+                            cursor: 'pointer',
+                            fontWeight: 'bold',
+                            transition: 'all 0.3s ease'
+                        }}
+                        onClick={() => navigate('/login')}  // Add this onClick handler
+                    >
                         Sign In
                     </button>
                     <div style={{ position: 'relative' }}>
