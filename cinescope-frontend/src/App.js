@@ -7,6 +7,7 @@ import AnimationMovies from './components/categories/anime.jsx';
 import HorrorMovies from './components/categories/horror.jsx';
 import RomanceMovies from './components/categories/romance.jsx';
 import LoginForm from './components/auth/LoginForm.jsx';
+import SignupForm from './components/auth/SignupForm.jsx';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/categories/horror" element={<HorrorMovies />} />
           <Route path="/categories/romance" element={<RomanceMovies />} />
           <Route path="/login" element={<LoginForm />} />
+          <Route path="/register" element={<SignupForm />} />
         </Routes>
       </div>
     </Router>
