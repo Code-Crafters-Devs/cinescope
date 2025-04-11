@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faDownload, faArrowLeft, faStar, faTimes } from '@fortawesome/free-solid-svg-icons';
 
-function TrailerPage({ movie, onBack, trailerKey }) {
+function MovieDetails({ movie, onBack, trailerKey }) {
     const [movieDetails, setMovieDetails] = useState(null);
     const [cast, setCast] = useState([]);
     const [relatedMovies, setRelatedMovies] = useState([]);
@@ -468,4 +468,4 @@ function TrailerPage({ movie, onBack, trailerKey }) {
     );
 }
 
-export default TrailerPage;
+export default MovieDetails;

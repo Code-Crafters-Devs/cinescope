@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faAngleUp, faAngleDown, faSearch } from '@fortawesome/free-solid-svg-icons'; 
-import TrailerPage from '../components/movies/MovieDetails.jsx';
+import MovieDetails from '../components/movies/MovieDetails.jsx';
+import { useNavigate } from 'react-router-dom';
 
 function LandPage() {
     const [movies, setMovies] = useState([]);
@@ -20,6 +21,7 @@ function LandPage() {
     const [selectedMovie, setSelectedMovie] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const categories = ["Action", "Comedy", "Animation", "Horror", "Romantic"];
+    const navigate = useNavigate();
 
     const fetchMovieVideos = useCallback(async (movieId, isFeatured = false) => {
         try {
@@ -31,7 +33,6 @@ function LandPage() {
             
             if (isFeatured) {
                 setFeaturedMovieVideos(videos);
-                
                 const trailer = videos.find(vid => vid.type === "Trailer" && vid.site === "YouTube");
                 if (trailer) {
                     setFeaturedTrailerKey(trailer.key);
@@ -141,7 +142,7 @@ function LandPage() {
     }, [fetchMovies]);
 
     if (showTrailerPage && selectedMovie && trailerUrl) {
-        return <TrailerPage 
+        return <MovieDetails 
             movie={selectedMovie} 
             onBack={closeTrailerPage} 
             trailerKey={trailerUrl} 
@@ -273,7 +274,10 @@ function LandPage() {
                     </button>
                     <div style={{ position: 'relative' }}>
                         <button
-                            onClick={toggleDropdown}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                toggleDropdown();
+                            }}
                             style={{
                                 background: 'red',
                                 border: 'none',
@@ -313,8 +317,16 @@ function LandPage() {
                                         onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3e3e5e'}
                                         onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                                         onClick={() => {
-                                            console.log(`Selected category: ${category}`);
-                                            toggleDropdown();
+                                            const categoryMap = {
+                                                'Action': 'action',
+                                                'Comedy': 'comedy',
+                                                'Animation': 'animation',
+                                                'Horror': 'horror',
+                                                'Romantic': 'romance'
+                                            };
+                                            const path = categoryMap[category] || category.toLowerCase();
+                                            navigate(`/categories/${path}`);
+                                            setIsOpen(false);
                                         }}
                                     >
                                         {category}
@@ -326,126 +338,110 @@ function LandPage() {
                 </div>
             </div>
 
-            <div style={{ padding: '20px 30px' }}>
-                <section 
-                    style={{
-                        position: 'relative',
-                        borderRadius: '8px',
-                        margin: '20px 0',
-                        minHeight: '70vh',
-                        display: 'flex',
-                        alignItems: 'center',
-                        overflow: 'hidden'
-                    }}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
-                >
-                    {isHovering && featuredTrailerKey ? (
-                        <div style={{
-                            position: 'absolute',
-                            width: '100%',
-                            height: '100%',
-                            top: 0,
-                            left: 0,
-                            zIndex: 1
-                        }}>
-                            <iframe
-                                title="Background Trailer"
-                                width="100%"
-                                height="100%"
-                                src={`https://www.youtube.com/embed/${featuredTrailerKey}?autoplay=1&mute=1&controls=0&showinfo=0&loop=1&playlist=${featuredTrailerKey}`}
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                style={{
-                                    position: 'absolute',
-                                    top: '-60px',
-                                    left: 0,
-                                    width: '100%',
-                                    height: 'calc(100% + 120px)',
-                                    objectFit: 'cover',
-                                    pointerEvents: 'none'
-                                }}
-                            ></iframe>
-                        </div>
-                    ) : (
-                        <div style={{
-                            position: 'absolute',
-                            width: '100%',
-                            height: '100%',
-                            top: 0,
-                            left: 0,
-                            backgroundImage: featuredMovie?.backdrop_path 
-                                ? `url(https://image.tmdb.org/t/p/original${featuredMovie.backdrop_path})`
-                                : 'url(https://image.tmdb.org/t/p/original/ziEuG1essDuWuC5lp3UxW6l7Rpw.jpg)',
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            zIndex: 1
-                        }}></div>
-                    )}
-                    
-                    <div style={{
-                        position: 'absolute',
-                        width: '100%',
-                        height: '100%',
-                        top: 0,
-                        left: 0,
-                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                        zIndex: 2
-                    }}></div>
-                    
-                    <div style={{
-                        maxWidth: '600px',
-                        padding: '40px',
-                        position: 'relative',
-                        zIndex: 3
-                    }}>
-                        <h2 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>
-                            {featuredMovie?.title || 'Featured Movie'}
-                        </h2>
-                        <div style={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            marginBottom: '20px',
-                            fontWeight: 'bold'
-                        }}>
-                            <span>Rating: {featuredMovie?.vote_average?.toFixed(1) || 'N/A'}/10</span>
-                            <span>Released: {featuredMovie?.release_date?.split('-')[0] || 'N/A'}</span>
-                        </div>
-                        <p style={{ 
-                            lineHeight: '1.6', 
-                            marginBottom: '25px',
-                            fontSize: '1.1rem'
-                        }}>
-                            {featuredMovie?.overview || 'Movie description will appear here.'}
-                        </p>
-                        <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-                            <button 
-                                onClick={() => {
-                                    if (featuredMovie) {
-                                        playTrailer(featuredMovie);
-                                    }
-                                }}
-                                style={{
-                                    backgroundColor: '#e50914',
-                                    color: 'white',
-                                    border: 'none',
-                                    padding: '12px 30px',
-                                    fontSize: '1rem',
-                                    borderRadius: '4px',
-                                    cursor: 'pointer',
-                                    transition: 'background-color 0.3s',
-                                    fontWeight: 'bold'
-                                }}
-                            >
-                                VIEW TRAILER
-                            </button>
-                            {featuredMovieVideos.length > 0 && (
-                                <button 
-                                    onClick={toggleVideoGallery}
+            {featuredMovie && (
+                <div style={{ padding: '20px 30px' }}>
+                    <section 
+                        style={{
+                            position: 'relative',
+                            borderRadius: '8px',
+                            margin: '20px 0',
+                            minHeight: '70vh',
+                            display: 'flex',
+                            alignItems: 'center',
+                            overflow: 'hidden'
+                        }}
+                        onMouseEnter={handleMouseEnter}
+                        onMouseLeave={handleMouseLeave}
+                    >
+                        {isHovering && featuredTrailerKey ? (
+                            <div style={{
+                                position: 'absolute',
+                                width: '100%',
+                                height: '100%',
+                                top: 0,
+                                left: 0,
+                                zIndex: 1
+                            }}>
+                                <iframe
+                                    title="Background Trailer"
+                                    width="100%"
+                                    height="100%"
+                                    src={`https://www.youtube.com/embed/${featuredTrailerKey}?autoplay=1&mute=1&controls=0&showinfo=0&loop=1&playlist=${featuredTrailerKey}`}
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     style={{
-                                        backgroundColor: 'rgba(255,255,255,0.1)',
+                                        position: 'absolute',
+                                        top: '-60px',
+                                        left: 0,
+                                        width: '100%',
+                                        height: 'calc(100% + 120px)',
+                                        objectFit: 'cover',
+                                        pointerEvents: 'none'
+                                    }}
+                                ></iframe>
+                            </div>
+                        ) : (
+                            <div style={{
+                                position: 'absolute',
+                                width: '100%',
+                                height: '100%',
+                                top: 0,
+                                left: 0,
+                                backgroundImage: featuredMovie?.backdrop_path 
+                                    ? `url(https://image.tmdb.org/t/p/original${featuredMovie.backdrop_path})`
+                                    : 'url(https://image.tmdb.org/t/p/original/ziEuG1essDuWuC5lp3UxW6l7Rpw.jpg)',
+                                backgroundSize: 'cover',
+                                backgroundPosition: 'center',
+                                zIndex: 1
+                            }}></div>
+                        )}
+                        
+                        <div style={{
+                            position: 'absolute',
+                            width: '100%',
+                            height: '100%',
+                            top: 0,
+                            left: 0,
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            zIndex: 2
+                        }}></div>
+                        
+                        <div style={{
+                            maxWidth: '600px',
+                            padding: '40px',
+                            position: 'relative',
+                            zIndex: 3
+                        }}>
+                            <h2 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>
+                                {featuredMovie?.title || 'Featured Movie'}
+                            </h2>
+                            <div style={{ 
+                                display: 'flex', 
+                                justifyContent: 'space-between', 
+                                marginBottom: '20px',
+                                fontWeight: 'bold'
+                            }}>
+                                <span>Rating: {featuredMovie?.vote_average?.toFixed(1) || 'N/A'}/10</span>
+                                <span>Released: {featuredMovie?.release_date?.split('-')[0] || 'N/A'}</span>
+                            </div>
+                            <p style={{ 
+                                lineHeight: '1.6', 
+                                marginBottom: '25px',
+                                fontSize: '1.1rem'
+                            }}>
+                                {featuredMovie?.overview || 'Movie description will appear here.'}
+                            </p>
+                            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                                <button 
+                                    onClick={() => {
+                                        if (featuredMovie) {
+                                            playTrailer(featuredMovie);
+                                        }
+                                    }}
+                                    style={{
+                                        backgroundColor: '#e50914',
                                         color: 'white',
-                                        border: '2px solid #e50914',
+                                        border: 'none',
                                         padding: '12px 30px',
                                         fontSize: '1rem',
                                         borderRadius: '4px',
@@ -454,102 +450,122 @@ function LandPage() {
                                         fontWeight: 'bold'
                                     }}
                                 >
-                                    {showVideoGallery ? 'HIDE VIDEOS' : 'SHOW ALL VIDEOS'}
+                                    VIEW TRAILER
                                 </button>
-                            )}
-                        </div>
-                    </div>
-                </section>
-                
-                {showVideoGallery && featuredMovieVideos.length > 0 && (
-                    <section style={{
-                        padding: '20px',
-                        backgroundColor: 'rgba(26, 26, 46, 0.8)',
-                        borderRadius: '8px',
-                        marginBottom: '30px'
-                    }}>
-                        <h3 style={{ 
-                            fontSize: '1.3rem', 
-                            marginBottom: '20px',
-                            borderBottom: '1px solid #333',
-                            paddingBottom: '10px'
-                        }}>
-                            Videos for {featuredMovie?.title}
-                        </h3>
-                        
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                            gap: '20px'
-                        }}>
-                            {featuredMovieVideos.map(video => (
-                                <div 
-                                    key={video.key}
-                                    style={{
-                                        cursor: 'pointer',
-                                        borderRadius: '4px',
-                                        overflow: 'hidden'
-                                    }}
-                                    onClick={() => setTrailerUrl(video.key)}
-                                >
-                                    <div style={{
-                                        position: 'relative',
-                                        paddingBottom: '56.25%',
-                                        height: 0
-                                    }}>
-                                        <img 
-                                            src={`https://img.youtube.com/vi/${video.key}/mqdefault.jpg`}
-                                            alt={video.name}
-                                            style={{
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: 0,
-                                                width: '100%',
-                                                height: '100%',
-                                                objectFit: 'cover'
-                                            }}
-                                        />
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '50%',
-                                            left: '50%',
-                                            transform: 'translate(-50%, -50%)',
-                                            backgroundColor: 'rgba(229, 9, 20, 0.8)',
-                                            borderRadius: '50%',
-                                            width: '50px',
-                                            height: '50px',
-                                            display: 'flex',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            fontSize: '1.5rem'
-                                        }}>
-                                            ▶
-                                        </div>
-                                    </div>
-                                    <div style={{ padding: '10px 5px' }}>
-                                        <p style={{ 
-                                            margin: '0', 
-                                            fontWeight: 'bold',
-                                            whiteSpace: 'nowrap',
-                                            overflow: 'hidden',
-                                            textOverflow: 'ellipsis'
-                                        }}>
-                                            {video.name}
-                                        </p>
-                                        <p style={{
-                                            margin: '5px 0 0',
-                                            fontSize: '0.8rem',
-                                            color: '#aaa'
-                                        }}>
-                                            {video.type}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                                {featuredMovieVideos.length > 0 && (
+                                    <button 
+                                        onClick={toggleVideoGallery}
+                                        style={{
+                                            backgroundColor: 'rgba(255,255,255,0.1)',
+                                            color: 'white',
+                                            border: '2px solid #e50914',
+                                            padding: '12px 30px',
+                                            fontSize: '1rem',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            transition: 'background-color 0.3s',
+                                            fontWeight: 'bold'
+                                        }}
+                                    >
+                                        {showVideoGallery ? 'HIDE VIDEOS' : 'SHOW ALL VIDEOS'}
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     </section>
-                )}
-                
+                    
+                    {showVideoGallery && featuredMovieVideos.length > 0 && (
+                        <section style={{
+                            padding: '20px',
+                            backgroundColor: 'rgba(26, 26, 46, 0.8)',
+                            borderRadius: '8px',
+                            marginBottom: '30px'
+                        }}>
+                            <h3 style={{ 
+                                fontSize: '1.3rem', 
+                                marginBottom: '20px',
+                                borderBottom: '1px solid #333',
+                                paddingBottom: '10px'
+                            }}>
+                                Videos for {featuredMovie?.title}
+                            </h3>
+                            
+                            <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                                gap: '20px'
+                            }}>
+                                {featuredMovieVideos.map(video => (
+                                    <div 
+                                        key={video.key}
+                                        style={{
+                                            cursor: 'pointer',
+                                            borderRadius: '4px',
+                                            overflow: 'hidden'
+                                        }}
+                                        onClick={() => setTrailerUrl(video.key)}
+                                    >
+                                        <div style={{
+                                            position: 'relative',
+                                            paddingBottom: '56.25%',
+                                            height: 0
+                                        }}>
+                                            <img 
+                                                src={`https://img.youtube.com/vi/${video.key}/mqdefault.jpg`}
+                                                alt={video.name}
+                                                style={{
+                                                    position: 'absolute',
+                                                    top: 0,
+                                                    left: 0,
+                                                    width: '100%',
+                                                    height: '100%',
+                                                    objectFit: 'cover'
+                                                }}
+                                            />
+                                            <div style={{
+                                                position: 'absolute',
+                                                top: '50%',
+                                                left: '50%',
+                                                transform: 'translate(-50%, -50%)',
+                                                backgroundColor: 'rgba(229, 9, 20, 0.8)',
+                                                borderRadius: '50%',
+                                                width: '50px',
+                                                height: '50px',
+                                                display: 'flex',
+                                                justifyContent: 'center',
+                                                alignItems: 'center',
+                                                fontSize: '1.5rem'
+                                            }}>
+                                                ▶
+                                            </div>
+                                        </div>
+                                        <div style={{ padding: '10px 5px' }}>
+                                            <p style={{ 
+                                                margin: '0', 
+                                                fontWeight: 'bold',
+                                                whiteSpace: 'nowrap',
+                                                overflow: 'hidden',
+                                                textOverflow: 'ellipsis'
+                                            }}>
+                                                {video.name}
+                                            </p>
+                                            <p style={{
+                                                margin: '5px 0 0',
+                                                fontSize: '0.8rem',
+                                                color: '#aaa'
+                                            }}>
+                                                {video.type}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+                </div>
+            )}
+
+            <div style={{ padding: '20px 30px' }}>
                 <section>
                     <div style={{ 
                         display: 'flex', 
