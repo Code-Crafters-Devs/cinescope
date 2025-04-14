@@ -4,7 +4,6 @@ import { faAngleUp, faAngleDown, faSearch } from '@fortawesome/free-solid-svg-ic
 import MovieDetails from '../components/movies/MovieDetails.jsx';
 import { useNavigate } from 'react-router-dom';
 
-
 function LandPage() {
     const [movies, setMovies] = useState([]);
     const [filteredMovies, setFilteredMovies] = useState([]);
@@ -22,6 +21,7 @@ function LandPage() {
     const [selectedMovie, setSelectedMovie] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const categories = ["Action", "Comedy", "Animation", "Horror", "Romantic"];
+    const logoCinescope = process.env.PUBLIC_URL + '/logo-cinescope.jpeg';
     const navigate = useNavigate();
 
     const fetchMovieVideos = useCallback(async (movieId, isFeatured = false) => {
@@ -216,6 +216,15 @@ function LandPage() {
                     gap: '10px',
                     flex: 1
                 }}>
+                    <img 
+                        src={logoCinescope} 
+                        alt="CineScope Logo" 
+                        style={{
+                            height: '40px',
+                            width: 'auto',
+                            borderRadius: '4px'
+                        }}
+                    />
                     <span>CineScope</span>
                 </div>
                 
@@ -272,7 +281,7 @@ function LandPage() {
                             fontWeight: 'bold',
                             transition: 'all 0.3s ease'
                         }}
-                        onClick={() => navigate('/login')}  // Add this onClick handler
+                        onClick={() => navigate('/login')}
                     >
                         Sign In
                     </button>
