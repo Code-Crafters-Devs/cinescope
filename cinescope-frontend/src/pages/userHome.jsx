@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faAngleUp, faAngleDown, faSearch, faUserCircle } from '@fortawesome/free-solid-svg-icons'; 
+import { 
+    faAngleUp, 
+    faAngleDown, 
+    faSearch, 
+    faUserCircle, 
+    faPlus, 
+    faEdit, 
+    faSignOutAlt 
+} from '@fortawesome/free-solid-svg-icons'; 
 import MovieDetails from '../components/movies/MovieDetails.jsx';
 import { useNavigate } from 'react-router-dom';
 
@@ -25,10 +33,41 @@ function UserHome() {
     const [recentlyWatched, setRecentlyWatched] = useState([]);
     const [popularInCountry, setPopularInCountry] = useState([]);
     const [activeSection, setActiveSection] = useState('Featured Movies');
+    const [userData, setUserData] = useState(null); // New state for user data
     const categories = ["Action", "Comedy", "Animation", "Horror", "Romantic"];
     const navigate = useNavigate();
 
-    // Fetch user-specific data
+    // Profile dropdown states
+    const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+    const [showUpdateForm, setShowUpdateForm] = useState(false);
+    const [updateFormData, setUpdateFormData] = useState({
+        firstName: '',
+        lastName: '',
+        email: '',
+        country: ''
+    });
+
+    // Load user data from localStorage on mount
+    useEffect(() => {
+        const userDataString = localStorage.getItem('user');
+        if (userDataString) {
+            try {
+                const parsedData = JSON.parse(userDataString);
+                setUserData(parsedData);
+                setUpdateFormData({
+                    firstName: parsedData.firstName || '',
+                    lastName: parsedData.lastName || '',
+                    email: parsedData.email || '',
+                    country: parsedData.country || ''
+                });
+            } catch (error) {
+                console.error("Error parsing user data from localStorage:", error);
+                setUserData(null);
+            }
+        }
+    }, []);
+
+    // Fetch user-specific data (mock data)
     useEffect(() => {
         const mockFavorites = [
             { id: 1, title: "The Shawshank Redemption", poster_path: "/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg" },
@@ -47,17 +86,42 @@ function UserHome() {
             { id: 8, title: "Joker", poster_path: "/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg" }
         ];
         
-        const mockPopularInCountry = [
-            { id: 9, title: "Avengers: Endgame", poster_path: "/or06FN3Dka5tukK1e9sl16pB3iy.jpg" },
-            { id: 10, title: "Spider-Man: No Way Home", poster_path: "/1g0dhYtq4irTY1GPXvft6k4YLjm.jpg" },
-            { id: 11, title: "Black Panther", poster_path: "/uxzzxijgPIY7slzFvMotPv8wjKA.jpg" }
-        ];
-        
         setFavorites(mockFavorites);
         setCurrentlyWatching(mockCurrentlyWatching);
         setRecentlyWatched(mockRecentlyWatched);
-        setPopularInCountry(mockPopularInCountry);
     }, []);
+
+    // Fetch popular movies for user's country
+    useEffect(() => {
+        if (userData?.country) {
+            const fetchPopularForCountry = async () => {
+                try {
+                    const regionMap = {
+                        'United States': 'US',
+                        'India': 'IN',
+                        'United Kingdom': 'GB',
+                        'South Africa': 'ZA'
+                    };
+
+                    const region = regionMap[userData.country] || '';
+                    const response = await fetch(
+                        `https://api.themoviedb.org/3/movie/popular?api_key=02d2d30e38f07e116dd9f4ec122a4a27&language=en-US&page=1&region=${region}`
+                    );
+
+                    const data = await response.json();
+                    const filteredResults = data.results.filter(movie =>
+                        !movie.title.toLowerCase().includes('minecraft')
+                    );
+
+                    setPopularInCountry(filteredResults.slice(0, 12));
+                } catch (error) {
+                    console.error("Error fetching popular movies for country:", error);
+                }
+            };
+
+            fetchPopularForCountry();
+        }
+    }, [userData]);
 
     const fetchMovieVideos = useCallback(async (movieId, isFeatured = false) => {
         try {
@@ -115,6 +179,56 @@ function UserHome() {
             setLoading(false);
         }
     }, [page, fetchMovieVideos]);
+
+    const handleProfileUpdate = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
+
+            const response = await fetch('http://localhost:5000/api/users/profile', {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(updateFormData)
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Update succefully');
+            }
+
+            if (!data.user) {
+                throw new Error('User data returned from server');
+            }
+
+            // Update localStorage and state
+            localStorage.setItem('user', JSON.stringify(data.user));
+            setUserData(data.user);
+            setUpdateFormData({
+                firstName: data.user.firstName || '',
+                lastName: data.user.lastName || '',
+                email: data.user.email || '',
+                country: data.user.country || ''
+            });
+            setShowUpdateForm(false);
+            alert('Profile updated successfully!');
+        } catch (err) {
+            console.error('Update error:', err);
+            alert(`Failed to update profile: ${err.message}`);
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setUserData(null);
+        navigate('/login');
+    };
 
     const toggleDropdown = () => {
         setIsOpen(!isOpen);
@@ -185,57 +299,35 @@ function UserHome() {
         />;
     }
 
-    const renderSectionNav = () => {
-        return (
-            <div style={{
-                display: 'flex',
-                gap: '25px',
-                marginBottom: '20px',
-                paddingBottom: '10px',
-                borderBottom: '1px solid #333',
-                overflowX: 'auto',
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none'
-            }}>
-                {['Featured Movies', 'Popular in Your Country', 'Recently Watched', 'Currently Watching', 'Your Favorites'].map((section) => (
-                    <button
-                        key={section}
-                        onClick={() => setActiveSection(section)}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: activeSection === section ? '#e50914' : 'white',
-                            fontSize: '1.1rem',
-                            fontWeight: activeSection === section ? 'bold' : 'normal',
-                            padding: '8px 0',
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap',
-                            position: 'relative',
-                            transition: 'color 0.3s ease',
-                            ':hover': {
-                                color: '#e50914'
-                            }
-                        }}
-                    >
-                        {section}
-                        {activeSection === section && (
-                            <div style={{
-                                position: 'absolute',
-                                bottom: '-11px',
-                                left: 0,
-                                right: 0,
-                                height: '3px',
-                                backgroundColor: '#e50914',
-                                borderRadius: '3px 3px 0 0'
-                            }} />
-                        )}
-                    </button>
-                ))}
-            </div>
-        );
-    };
+    const renderMovieGrid = (movies, sectionName) => {
+        if (movies.length === 0) {
+            let message = '';
+            switch(sectionName) {
+                case 'Your Favorites':
+                    message = 'You currently have no favorite movies.';
+                    break;
+                case 'Recently Watched':
+                    message = 'You have not watched any movies recently.';
+                    break;
+                case 'Currently Watching':
+                    message = 'You are not currently watching any movies.';
+                    break;
+                default:
+                    message = 'No movies available.';
+            }
+            
+            return (
+                <div style={{ 
+                    gridColumn: '1 / -1',
+                    textAlign: 'center',
+                    padding: '40px',
+                    color: '#aaa'
+                }}>
+                    {message}
+                </div>
+            );
+        }
 
-    const renderMovieGrid = (movies) => {
         return (
             <div style={{
                 display: 'grid',
@@ -250,10 +342,7 @@ function UserHome() {
                             borderRadius: '8px',
                             overflow: 'hidden',
                             transition: 'transform 0.3s ease',
-                            cursor: 'pointer',
-                            ':hover': {
-                                transform: 'scale(1.05)'
-                            }
+                            cursor: 'pointer'
                         }}
                         onClick={() => updateFeaturedMovie(movie)}
                     >
@@ -297,6 +386,53 @@ function UserHome() {
                             </div>
                         </div>
                     </div>
+                ))}
+            </div>
+        );
+    };
+
+    const renderSectionNav = () => {
+        return (
+            <div style={{
+                display: 'flex',
+                gap: '25px',
+                marginBottom: '20px',
+                paddingBottom: '10px',
+                borderBottom: '1px solid #333',
+                overflowX: 'auto',
+                scrollbarWidth: 'none',
+                msOverflowStyle: 'none'
+            }}>
+                {['Featured Movies', 'Popular in Your Country', 'Recently Watched', 'Currently Watching', 'Your Favorites'].map((section) => (
+                    <button
+                        key={section}
+                        onClick={() => setActiveSection(section)}
+                        style={{
+                            background: 'none',
+                            border: 'none',
+                            color: activeSection === section ? '#e50914' : 'white',
+                            fontSize: '1.1rem',
+                            fontWeight: activeSection === section ? 'bold' : 'normal',
+                            padding: '8px 0',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap',
+                            position: 'relative',
+                            transition: 'color 0.3s ease'
+                        }}
+                    >
+                        {section}
+                        {activeSection === section && (
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '-11px',
+                                left: 0,
+                                right: 0,
+                                height: '3px',
+                                backgroundColor: '#e50914',
+                                borderRadius: '3px 3px 0 0'
+                            }} />
+                        )}
+                    </button>
                 ))}
             </div>
         );
@@ -413,12 +549,181 @@ function UserHome() {
                     justifyContent: 'flex-end',
                     flex: 1
                 }}>
-                    <div style={{
-                        cursor: 'pointer',
-                        fontSize: '1.5rem',
-                        color: '#e50914'
-                    }}>
-                        <FontAwesomeIcon icon={faUserCircle} />
+                    <div style={{ position: 'relative' }}>
+                        <div 
+                            style={{
+                                cursor: 'pointer',
+                                fontSize: '1.5rem',
+                                color: '#e50914',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px'
+                            }}
+                            onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                        >
+                            <FontAwesomeIcon icon={faUserCircle} />
+                            <span style={{ fontSize: '1rem' }}>
+                                Welcome, {userData?.firstName || 'User'}
+                            </span>
+                        </div>
+                        
+                        {showProfileDropdown && (
+                            <div style={{
+                                position: 'absolute',
+                                top: '100%',
+                                right: 0,
+                                backgroundColor: '#2c2c44',
+                                borderRadius: '4px',
+                                width: '200px',
+                                boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
+                                zIndex: 1000,
+                                marginTop: '10px',
+                                padding: '10px'
+                            }}>
+                                {!showUpdateForm ? (
+                                    <>
+                                        <div style={{ padding: '8px', borderBottom: '1px solid #3e3e5e' }}>
+                                            <p style={{ margin: 0, fontWeight: 'bold' }}>
+                                                {userData?.firstName || ''} {userData?.lastName || ''}
+                                            </p>
+                                            <p style={{ margin: '5px 0 0', fontSize: '0.8rem', color: '#aaa' }}>
+                                                {userData?.email || ''}
+                                            </p>
+                                            <p style={{ margin: '5px 0 0', fontSize: '0.8rem', color: '#aaa' }}>
+                                                {userData?.country || ''}
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowUpdateForm(true)}
+                                            style={{
+                                                width: '100%',
+                                                padding: '8px',
+                                                marginTop: '10px',
+                                                backgroundColor: '#e50914',
+                                                color: 'white',
+                                                border: 'none',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px'
+                                            }}
+                                        >
+                                            <FontAwesomeIcon icon={faEdit} />
+                                            Update Profile
+                                        </button>
+                                        <button
+                                            onClick={handleLogout}
+                                            style={{
+                                                width: '100%',
+                                                padding: '8px',
+                                                marginTop: '10px',
+                                                backgroundColor: 'transparent',
+                                                color: '#e50914',
+                                                border: '1px solid #e50914',
+                                                borderRadius: '4px',
+                                                cursor: 'pointer',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                gap: '8px'
+                                            }}
+                                        >
+                                            <FontAwesomeIcon icon={faSignOutAlt} />
+                                            Logout
+                                        </button>
+                                    </>
+                                ) : (
+                                    <div style={{ padding: '8px' }}>
+                                        <h4 style={{ margin: '0 0 10px', textAlign: 'center' }}>Update Profile</h4>
+                                        <div style={{ marginBottom: '10px' }}>
+                                            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.8rem' }}>First Name</label>
+                                            <input
+                                                type="text"
+                                                value={updateFormData.firstName}
+                                                onChange={(e) => setUpdateFormData({...updateFormData, firstName: e.target.value})}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '5px',
+                                                    borderRadius: '4px',
+                                                    border: '1px solid #333',
+                                                    backgroundColor: '#2c2c44',
+                                                    color: '#fff'
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ marginBottom: '10px' }}>
+                                            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.8rem' }}>Last Name</label>
+                                            <input
+                                                type="text"
+                                                value={updateFormData.lastName}
+                                                onChange={(e) => setUpdateFormData({...updateFormData, lastName: e.target.value})}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '5px',
+                                                    borderRadius: '4px',
+                                                    border: '1px solid #333',
+                                                    backgroundColor: '#2c2c44',
+                                                    color: '#fff'
+                                                }}
+                                            />
+                                        </div>
+                                        <div style={{ marginBottom: '10px' }}>
+                                            <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.8rem' }}>Country</label>
+                                            <select
+                                                value={updateFormData.country}
+                                                onChange={(e) => setUpdateFormData({...updateFormData, country: e.target.value})}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '5px',
+                                                    borderRadius: '4px',
+                                                    border: '1px solid #333',
+                                                    backgroundColor: '#2c2c44',
+                                                    color: '#fff'
+                                                }}
+                                            >
+                                                <option value="">Select Country</option>
+                                                <option value="South Africa">South Africa</option>
+                                                <option value="United States">United States</option>
+                                                <option value="India">India</option>
+                                                <option value="United Kingdom">United Kingdom</option>
+                                            </select>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '10px', marginTop: '15px' }}>
+                                            <button
+                                                onClick={handleProfileUpdate}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '8px',
+                                                    backgroundColor: '#e50914',
+                                                    color: 'white',
+                                                    border: 'none',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Save
+                                            </button>
+                                            <button
+                                                onClick={() => setShowUpdateForm(false)}
+                                                style={{
+                                                    flex: 1,
+                                                    padding: '8px',
+                                                    backgroundColor: 'transparent',
+                                                    color: '#e50914',
+                                                    border: '1px solid #e50914',
+                                                    borderRadius: '4px',
+                                                    cursor: 'pointer'
+                                                }}
+                                            >
+                                                Cancel
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                     <div style={{ position: 'relative' }}>
                         <button
@@ -716,10 +1021,10 @@ function UserHome() {
 
                 <section style={{ margin: '40px 0' }}>
                     {renderSectionNav()}
-                    {activeSection === 'Your Favorites' && renderMovieGrid(favorites)}
-                    {activeSection === 'Currently Watching' && renderMovieGrid(currentlyWatching)}
-                    {activeSection === 'Recently Watched' && renderMovieGrid(recentlyWatched)}
-                    {activeSection === 'Popular in Your Country' && renderMovieGrid(popularInCountry)}
+                    {activeSection === 'Your Favorites' && renderMovieGrid(favorites, 'Your Favorites')}
+                    {activeSection === 'Currently Watching' && renderMovieGrid(currentlyWatching, 'Currently Watching')}
+                    {activeSection === 'Recently Watched' && renderMovieGrid(recentlyWatched, 'Recently Watched')}
+                    {activeSection === 'Popular in Your Country' && renderMovieGrid(popularInCountry, 'Popular in Your Country')}
                 </section>
                 
                 <section>
@@ -755,7 +1060,7 @@ function UserHome() {
                         )}
                     </div>
                     
-                    {renderMovieGrid(filteredMovies)}
+                    {renderMovieGrid(filteredMovies, 'Featured Movies')}
                     
                     {filteredMovies.length === 0 && (
                         <div style={{ 

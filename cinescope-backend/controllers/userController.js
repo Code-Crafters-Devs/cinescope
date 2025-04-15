@@ -13,20 +13,51 @@ export const getUserProfile = async (req, res) => {
     }
 };
 
+// userController.js
 export const updateUserProfile = async (req, res) => {
     try {
-        const userId = req.user.id;
-        const updates = req.body; // Assuming updates are sent in the request body
-        const user = await User.findByIdAndUpdate(userId, updates, { new: true, runValidators: true }).select('-password');
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-        res.status(200).json(user);
+      const { firstName, lastName, country } = req.body;
+      
+      const user = await User.findById(req.user._id);
+      
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+      
+      user.firstName = firstName || user.firstName;
+      user.lastName = lastName || user.lastName;
+      user.country = country || user.country;
+      
+      const updatedUser = await user.save();
+      
+      res.status(200).json({
+        _id: updatedUser._id,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        email: updatedUser.email,
+        country: updatedUser.country
+      });
     } catch (error) {
-        res.status(500).json({ message: 'Server error', error: error.message });
+      res.status(500).json({ message: error.message });
     }
-};
-
+  };
+  
+  export const addToFavorites = async (req, res) => {
+    try {
+      const { movieId } = req.body;
+      
+      const user = await User.findById(req.user._id);
+      
+      if (!user.favorites.includes(movieId)) {
+        user.favorites.push(movieId);
+        await user.save();
+      }
+      
+      res.status(200).json({ message: 'Added to favorites successfully' });
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
 export const getUserWatchHistory = async (req, res) => {
     try {
         const userId = req.user.id;

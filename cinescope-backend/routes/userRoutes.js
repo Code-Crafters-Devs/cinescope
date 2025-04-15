@@ -18,4 +18,8 @@ router.get('/protected', authMiddleware, (req, res) => {
     res.status(200).json({ message: 'This is a protected route' });
 });
 
+// userRoutes.js
+router.put('/profile', authMiddleware, updateUserProfile);
+//router.post('/favorites', authMiddleware, addToFavorites);
+
 export default router;
