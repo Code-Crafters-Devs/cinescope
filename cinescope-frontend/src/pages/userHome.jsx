@@ -7,7 +7,9 @@ import {
     faUserCircle, 
     faPlus, 
     faEdit, 
-    faSignOutAlt 
+    faSignOutAlt,
+    faHeart,
+    faHeart as faSolidHeart
 } from '@fortawesome/free-solid-svg-icons'; 
 import MovieDetails from '../components/movies/MovieDetails.jsx';
 import { useNavigate } from 'react-router-dom';
@@ -33,7 +35,7 @@ function UserHome() {
     const [recentlyWatched, setRecentlyWatched] = useState([]);
     const [popularInCountry, setPopularInCountry] = useState([]);
     const [activeSection, setActiveSection] = useState('Featured Movies');
-    const [userData, setUserData] = useState(null); // New state for user data
+    const [userData, setUserData] = useState(null);
     const categories = ["Action", "Comedy", "Animation", "Horror", "Romantic"];
     const navigate = useNavigate();
 
@@ -60,6 +62,11 @@ function UserHome() {
                     email: parsedData.email || '',
                     country: parsedData.country || ''
                 });
+                
+                // Load favorites if they exist in user data
+                if (parsedData.favorites) {
+                    setFavorites(parsedData.favorites);
+                }
             } catch (error) {
                 console.error("Error parsing user data from localStorage:", error);
                 setUserData(null);
@@ -67,28 +74,32 @@ function UserHome() {
         }
     }, []);
 
-    // Fetch user-specific data (mock data)
+    // Fetch user-specific data
     useEffect(() => {
-        const mockFavorites = [
-            { id: 1, title: "The Shawshank Redemption", poster_path: "/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg" },
-            { id: 2, title: "The Godfather", poster_path: "/3bhkrj58Vtu7enYsRolD1fZdja1.jpg" },
-            { id: 3, title: "Pulp Fiction", poster_path: "/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg" }
-        ];
-        
-        const mockCurrentlyWatching = [
-            { id: 4, title: "The Dark Knight", poster_path: "/qJ2tW6WMUDux911r6m7haRef0WH.jpg" },
-            { id: 5, title: "Inception", poster_path: "/9gk7adHYeDvHkCSEqAvQNLV5Uge.jpg" }
-        ];
-        
-        const mockRecentlyWatched = [
-            { id: 6, title: "Interstellar", poster_path: "/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" },
-            { id: 7, title: "Parasite", poster_path: "/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg" },
-            { id: 8, title: "Joker", poster_path: "/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg" }
-        ];
-        
-        setFavorites(mockFavorites);
-        setCurrentlyWatching(mockCurrentlyWatching);
-        setRecentlyWatched(mockRecentlyWatched);
+        const fetchUserData = async () => {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+
+                const response = await fetch('http://localhost:5000/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserData(data);
+                    if (data.favorites) {
+                        setFavorites(data.favorites);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        };
+
+        fetchUserData();
     }, []);
 
     // Fetch popular movies for user's country
@@ -180,6 +191,46 @@ function UserHome() {
         }
     }, [page, fetchMovieVideos]);
 
+    const toggleFavorite = async (movie) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+
+            const isFavorite = favorites.some(fav => fav.id === movie.id);
+            const method = isFavorite ? 'DELETE' : 'POST';
+
+            const response = await fetch(`http://localhost:5000/api/users/favorites/${movie.id}`, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(movie)
+            });
+
+            if (response.ok) {
+                const updatedUser = await response.json();
+                setFavorites(updatedUser.favorites || []);
+                
+                // Update localStorage
+                const currentUser = JSON.parse(localStorage.getItem('user'));
+                localStorage.setItem('user', JSON.stringify({
+                    ...currentUser,
+                    favorites: updatedUser.favorites
+                }));
+            }
+        } catch (error) {
+            console.error("Error updating favorites:", error);
+        }
+    };
+
+    const isFavorite = (movieId) => {
+        return favorites.some(movie => movie.id === movieId);
+    };
+
     const handleProfileUpdate = async () => {
         try {
             const token = localStorage.getItem('token');
@@ -199,11 +250,11 @@ function UserHome() {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Update succefully');
+                throw new Error(data.message || 'Update failed');
             }
 
             if (!data.user) {
-                throw new Error('User data returned from server');
+                throw new Error('User data not returned from server');
             }
 
             // Update localStorage and state
@@ -342,23 +393,53 @@ function UserHome() {
                             borderRadius: '8px',
                             overflow: 'hidden',
                             transition: 'transform 0.3s ease',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
+                            position: 'relative'
                         }}
-                        onClick={() => updateFeaturedMovie(movie)}
                     >
-                        <img 
-                            src={movie.poster_path 
-                                ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
-                                : 'https://via.placeholder.com/180x270?text=No+Poster'}
-                            alt={movie.title}
-                            style={{
-                                width: '100%',
-                                height: '270px',
-                                objectFit: 'cover',
-                                borderRadius: '8px',
-                                border: '1px solid #333'
-                            }}
-                        />
+                        <div 
+                            onClick={() => updateFeaturedMovie(movie)}
+                            style={{ position: 'relative' }}
+                        >
+                            <img 
+                                src={movie.poster_path 
+                                    ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
+                                    : 'https://via.placeholder.com/180x270?text=No+Poster'}
+                                alt={movie.title}
+                                style={{
+                                    width: '100%',
+                                    height: '270px',
+                                    objectFit: 'cover',
+                                    borderRadius: '8px',
+                                    border: '1px solid #333'
+                                }}
+                            />
+                            <div 
+                                style={{
+                                    position: 'absolute',
+                                    top: '10px',
+                                    right: '10px',
+                                    backgroundColor: 'rgba(0,0,0,0.7)',
+                                    borderRadius: '50%',
+                                    width: '36px',
+                                    height: '36px',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    cursor: 'pointer',
+                                    zIndex: 2
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleFavorite(movie);
+                                }}
+                            >
+                                <FontAwesomeIcon 
+                                    icon={isFavorite(movie.id) ? faSolidHeart : faHeart} 
+                                    color={isFavorite(movie.id) ? '#e50914' : 'white'}
+                                />
+                            </div>
+                        </div>
                         <div style={{ padding: '12px 5px' }}>
                             <h4 style={{ 
                                 margin: '0 0 5px 0', 
@@ -905,6 +986,29 @@ function UserHome() {
                                         }}
                                     >
                                         VIEW TRAILER
+                                    </button>
+                                    <button 
+                                        onClick={() => toggleFavorite(featuredMovie)}
+                                        style={{
+                                            backgroundColor: isFavorite(featuredMovie.id) ? '#e50914' : 'rgba(255,255,255,0.1)',
+                                            color: 'white',
+                                            border: `2px solid ${isFavorite(featuredMovie.id) ? '#e50914' : '#e50914'}`,
+                                            padding: '12px 30px',
+                                            fontSize: '1rem',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            transition: 'background-color 0.3s',
+                                            fontWeight: 'bold',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px'
+                                        }}
+                                    >
+                                        <FontAwesomeIcon 
+                                            icon={isFavorite(featuredMovie.id) ? faSolidHeart : faHeart} 
+                                            color={isFavorite(featuredMovie.id) ? 'white' : '#e50914'}
+                                        />
+                                        {isFavorite(featuredMovie.id) ? 'FAVORITED' : 'ADD TO FAVORITES'}
                                     </button>
                                     {featuredMovieVideos.length > 0 && (
                                         <button 
