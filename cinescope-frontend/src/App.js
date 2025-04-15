@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import './App.css';
 import LandPage from './pages/index.js';
 import ActionMovies from './components/categories/action.jsx';
@@ -9,6 +9,13 @@ import RomanceMovies from './components/categories/romance.jsx';
 import LoginForm from './components/auth/LoginForm.jsx';
 import SignupForm from './components/auth/SignupForm.jsx';
 import UserHome from './pages/userHome.jsx';
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+  return children;
+};
 
 function App() {
   return (
@@ -23,7 +30,11 @@ function App() {
           <Route path="/categories/romance" element={<RomanceMovies />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<SignupForm />} />
-          <Route path="/home" element={<UserHome />} />
+          <Route path="/userHome" element={
+          <ProtectedRoute>
+            <UserHome />
+          </ProtectedRoute>
+        } />
   
         </Routes>
       </div>

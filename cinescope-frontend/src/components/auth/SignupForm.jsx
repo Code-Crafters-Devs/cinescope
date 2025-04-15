@@ -12,6 +12,8 @@ function SignupForm() {
   });
 
   const [errors, setErrors] = useState({});
+  const [serverError, setServerError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -38,11 +40,37 @@ function SignupForm() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
-      console.log("Form submitted:", formData);
-      navigate('/home');
+      setLoading(true);
+      setServerError('');
+      
+      try {
+        const { confirmPassword, ...dataToSend } = formData;
+        
+        const response = await fetch('http://localhost:5000/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(dataToSend),
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Registration failed');
+        }
+        
+        // Show success and redirect to login
+        alert('Registration successful! Please login.');
+        navigate('/login');
+      } catch (err) {
+        setServerError(err.message);
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -71,6 +99,19 @@ function SignupForm() {
           color: '#e50914',
           marginBottom: '1.5rem'
         }}>Create Your Account</h2>
+
+        {serverError && (
+          <div style={{
+            backgroundColor: 'rgba(229, 9, 20, 0.1)',
+            border: '1px solid #e50914',
+            borderRadius: '4px',
+            padding: '0.75rem',
+            marginBottom: '1rem',
+            color: '#e50914'
+          }}>
+            {serverError}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <div>
@@ -218,23 +259,24 @@ function SignupForm() {
 
           <button
             type="submit"
+            disabled={loading}
             style={{
               width: '100%',
               padding: '0.75rem',
               marginTop: '1.5rem',
-              backgroundColor: '#e50914',
+              backgroundColor: loading ? '#7a0a10' : '#e50914',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
               fontSize: '1rem',
               fontWeight: 'bold',
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'background-color 0.3s'
             }}
-            onMouseOver={(e) => (e.target.style.backgroundColor = '#f40612')}
-            onMouseOut={(e) => (e.target.style.backgroundColor = '#e50914')}
+            onMouseOver={(e) => !loading && (e.target.style.backgroundColor = '#f40612')}
+            onMouseOut={(e) => !loading && (e.target.style.backgroundColor = '#e50914')}
           >
-            Sign Up
+            {loading ? 'Processing...' : 'Sign Up'}
           </button>
 
           <p style={{

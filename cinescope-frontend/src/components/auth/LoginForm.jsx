@@ -1,12 +1,44 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log({ email, password });
+    setLoading(true);
+    setError('');
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+      
+      // Save token and user data in localStorage
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
+      // Redirect to home page
+      navigate('/userHome');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -34,6 +66,20 @@ function LoginForm() {
           color: '#e50914',
           marginBottom: '1.5rem'
         }}>Login</h2>
+        
+        {error && (
+          <div style={{
+            backgroundColor: 'rgba(229, 9, 20, 0.1)',
+            border: '1px solid #e50914',
+            borderRadius: '4px',
+            padding: '0.75rem',
+            marginBottom: '1rem',
+            color: '#e50914'
+          }}>
+            {error}
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit}>
           <div>
             <label style={{
@@ -81,23 +127,24 @@ function LoginForm() {
           </div>
           <button
             type="submit"
+            disabled={loading}
             style={{
               width: '100%',
               padding: '0.75rem',
               marginTop: '1.5rem',
-              backgroundColor: '#e50914',
+              backgroundColor: loading ? '#7a0a10' : '#e50914',
               color: 'white',
               border: 'none',
               borderRadius: '4px',
               fontSize: '1rem',
               fontWeight: 'bold',
-              cursor: 'pointer',
+              cursor: loading ? 'not-allowed' : 'pointer',
               transition: 'background-color 0.3s'
             }}
-            onMouseOver={(e) => (e.target.style.backgroundColor = '#f40612')}
-            onMouseOut={(e) => (e.target.style.backgroundColor = '#e50914')}
+            onMouseOver={(e) => !loading && (e.target.style.backgroundColor = '#f40612')}
+            onMouseOut={(e) => !loading && (e.target.style.backgroundColor = '#e50914')}
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
           <p style={{
             textAlign: 'center',
