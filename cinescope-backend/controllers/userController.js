@@ -1,4 +1,6 @@
 import User from '../models/User.js';
+import Movie from '../models/Movie.js';
+import axios from 'axios';
 
 export const getUserProfile = async (req, res) => {
     try {
@@ -42,22 +44,6 @@ export const updateUserProfile = async (req, res) => {
     }
   };
   
-  export const addToFavorites = async (req, res) => {
-    try {
-      const { movieId } = req.body;
-      
-      const user = await User.findById(req.user._id);
-      
-      if (!user.favorites.includes(movieId)) {
-        user.favorites.push(movieId);
-        await user.save();
-      }
-      
-      res.status(200).json({ message: 'Added to favorites successfully' });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
-    }
-  };
 export const getUserWatchHistory = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -68,5 +54,84 @@ export const getUserWatchHistory = async (req, res) => {
         res.status(200).json(user.recentlyWatched);
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
+export const addToFavorites = async (req, res) => {
+    try {
+        const { movieId } = req.params;
+        const userId = req.user._id;
+
+        // First check if movie exists in our database
+        let movie = await Movie.findOne({ tmdbId: movieId });
+        
+        if (!movie) {
+            // If not, fetch from TMDB and create in our database
+            const tmdbResponse = await axios.get(
+                `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.TMDB_API_KEY}`
+            );
+            
+            movie = new Movie({
+                tmdbId: tmdbResponse.data.id,
+                title: tmdbResponse.data.title,
+                overview: tmdbResponse.data.overview,
+                releaseDate: tmdbResponse.data.release_date,
+                poster_path: tmdbResponse.data.poster_path,
+                backdrop_path: tmdbResponse.data.backdrop_path,
+                vote_average: tmdbResponse.data.vote_average
+            });
+            await movie.save();
+        }
+
+        // Update user's favorites
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { $addToSet: { favorites: movie._id } },
+            { new: true }
+        ).populate('favorites');
+
+        res.status(200).json({
+            success: true,
+            favorites: user.favorites
+        });
+    } catch (error) {
+        console.error('Error adding to favorites:', error);
+        res.status(500).json({ message: 'Error adding to favorites', error: error.message });
+    }
+};
+
+export const removeFromFavorites = async (req, res) => {
+    try {
+        const { movieId } = req.params;
+        const userId = req.user._id;
+
+        // Update user's favorites
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { $pull: { favorites: movieId } },
+            { new: true }
+        ).populate('favorites');
+
+        res.status(200).json({
+            success: true,
+            favorites: user.favorites
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error removing from favorites', error: error.message });
+    }
+};
+
+export const getFavorites = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const user = await User.findById(userId).populate('favorites');
+        
+        res.status(200).json({
+            success: true,
+            favorites: user.favorites
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error getting favorites', error: error.message });
     }
 };

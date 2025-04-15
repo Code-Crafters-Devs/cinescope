@@ -10,18 +10,11 @@ const movieSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    overview: {
-        type: String,
-        required: true
-    },
-    releaseDate: {
-        type: Date,
-        required: true
-    },
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }
+    overview: String,
+    poster_path: String,
+    backdrop_path: String,
+    releaseDate: Date,
+    vote_average: Number
 }, { timestamps: true });
 
 const Movie = mongoose.model('Movie', movieSchema);

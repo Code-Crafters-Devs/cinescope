@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUserProfile, updateUserProfile, getUserWatchHistory } from '../controllers/userController.js';
+import { getUserProfile, updateUserProfile, getUserWatchHistory, addToFavorites, removeFromFavorites, getFavorites } from '../controllers/userController.js';
 import authMiddleware from '../middlewares/authMiddleware.js'; // Removed { authenticate }
 
 const router = express.Router();
@@ -18,8 +18,12 @@ router.get('/protected', authMiddleware, (req, res) => {
     res.status(200).json({ message: 'This is a protected route' });
 });
 
-// userRoutes.js
+
 router.put('/profile', authMiddleware, updateUserProfile);
-//router.post('/favorites', authMiddleware, addToFavorites);
+
+
+router.post('/favorites/:movieId', authMiddleware, addToFavorites);
+router.delete('/favorites/:movieId', authMiddleware, removeFromFavorites);
+router.get('/favorites', authMiddleware, getFavorites);
 
 export default router;
