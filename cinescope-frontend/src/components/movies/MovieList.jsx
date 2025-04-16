@@ -272,6 +272,7 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
             </div>
 
             {/* Main Content */}
+<<<<<<
             <div style={{ padding: isMobile ? '15px' : '20px 30px' }}>
                 <section>
                     <div style={sectionHeaderStyle}>

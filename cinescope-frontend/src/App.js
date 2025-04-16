@@ -9,6 +9,7 @@ import RomanceMovies from './components/categories/romance.jsx';
 import LoginForm from './components/auth/LoginForm.jsx';
 import SignupForm from './components/auth/SignupForm.jsx';
 import UserHome from './pages/userHome.jsx';
+
 import UserActionMovies from './components/categories/userAction.jsx';
 import UserComedyMovies from './components/categories/userComedy.jsx';
 import UserAnimationMovies from './components/categories/userAnime.jsx';
@@ -37,6 +38,7 @@ function App() {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<SignupForm />} />
           <Route path="/userHome" element={
+
             <ProtectedRoute>
               <UserHome />
             </ProtectedRoute>
@@ -66,6 +68,7 @@ function App() {
               <UserRomanceMovies />
             </ProtectedRoute>
           } />
+            
         </Routes>
       </div>
     </Router>

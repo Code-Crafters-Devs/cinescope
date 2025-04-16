@@ -21,6 +21,7 @@ function LandPage() {
     const [selectedMovie, setSelectedMovie] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
     const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
     const categories = ["Action", "Comedy", "Animation", "Horror", "Romantic"];
     const logoCinescope = process.env.PUBLIC_URL + '/logo-cinescope.jpeg';
     const navigate = useNavigate();
@@ -318,6 +319,7 @@ function LandPage() {
                         Sign In
                     </button>
                     <div style={{ position: 'relative', flex: isMobile ? '1' : 'none' }}>
+
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -389,6 +391,7 @@ function LandPage() {
 
             {featuredMovie && (
                 <div style={{ padding: isMobile ? '10px 15px' : '20px 30px' }}>
+
                     <section 
                         style={{
                             position: 'relative',
@@ -509,6 +512,7 @@ function LandPage() {
                                     }}
                                 >
                                     VIEW 
+
                                 </button>
                                 {featuredMovieVideos.length > 0 && (
                                     <button 
@@ -541,6 +545,7 @@ function LandPage() {
                         }}>
                             <h3 style={{ 
                                 fontSize: isMobile ? '1.1rem' : '1.3rem', 
+
                                 marginBottom: '20px',
                                 borderBottom: '1px solid #333',
                                 paddingBottom: '10px'
