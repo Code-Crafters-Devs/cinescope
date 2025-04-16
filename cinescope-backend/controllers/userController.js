@@ -15,7 +15,6 @@ export const getUserProfile = async (req, res) => {
     }
 };
 
-// userController.js
 export const updateUserProfile = async (req, res) => {
     try {
       const { firstName, lastName, country } = req.body;
@@ -135,3 +134,107 @@ export const getFavorites = async (req, res) => {
         res.status(500).json({ message: 'Error getting favorites', error: error.message });
     }
 };
+
+export const addToRecentlyWatched = async (req, res) => {
+    try {
+        const { movieId } = req.params;
+        const userId = req.user._id;
+
+        // First check if movie exists in our database
+        let movie = await Movie.findOne({ tmdbId: movieId });
+        
+        if (!movie) {
+            // If not, fetch from TMDB and create in our database
+            const tmdbResponse = await axios.get(
+                `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.TMDB_API_KEY}`
+            );
+            
+            movie = new Movie({
+                tmdbId: tmdbResponse.data.id,
+                title: tmdbResponse.data.title,
+                overview: tmdbResponse.data.overview,
+                releaseDate: tmdbResponse.data.release_date,
+                poster_path: tmdbResponse.data.poster_path,
+                backdrop_path: tmdbResponse.data.backdrop_path,
+                vote_average: tmdbResponse.data.vote_average
+            });
+            await movie.save();
+        }
+
+        // Update user's recently watched
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { 
+                $addToSet: { recentlyWatched: movie._id },
+                $pull: { currentlyWatching: movie._id } // Remove from currently watching if it was there
+            },
+            { new: true }
+        ).populate('recentlyWatched');
+
+        res.status(200).json({
+            success: true,
+            recentlyWatched: user.recentlyWatched
+        });
+    } catch (error) {
+        console.error('Error adding to recently watched:', error);
+        res.status(500).json({ message: 'Error adding to recently watched', error: error.message });
+    }
+};
+
+export const addToCurrentlyWatching = async (req, res) => {
+    try {
+        const { movieId } = req.params;
+        const userId = req.user._id;
+
+        // First check if movie exists in our database
+        let movie = await Movie.findOne({ tmdbId: movieId });
+        
+        if (!movie) {
+            // If not, fetch from TMDB and create in our database
+            const tmdbResponse = await axios.get(
+                `https://api.themoviedb.org/3/movie/${movieId}?api_key=${process.env.TMDB_API_KEY}`
+            );
+            
+            movie = new Movie({
+                tmdbId: tmdbResponse.data.id,
+                title: tmdbResponse.data.title,
+                overview: tmdbResponse.data.overview,
+                releaseDate: tmdbResponse.data.release_date,
+                poster_path: tmdbResponse.data.poster_path,
+                backdrop_path: tmdbResponse.data.backdrop_path,
+                vote_average: tmdbResponse.data.vote_average
+            });
+            await movie.save();
+        }
+
+        // Update user's currently watching
+        const user = await User.findByIdAndUpdate(
+            userId,
+            { $addToSet: { currentlyWatching: movie._id } },
+            { new: true }
+        ).populate('currentlyWatching');
+
+        res.status(200).json({
+            success: true,
+            currentlyWatching: user.currentlyWatching
+        });
+    } catch (error) {
+        console.error('Error adding to currently watching:', error);
+        res.status(500).json({ message: 'Error adding to currently watching', error: error.message });
+    }
+};
+
+export const getCurrentlyWatching = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const user = await User.findById(userId).populate('currentlyWatching');
+        
+        res.status(200).json({
+            success: true,
+            currentlyWatching: user.currentlyWatching
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Error getting currently watching', error: error.message });
+    }
+};
+

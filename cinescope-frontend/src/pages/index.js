@@ -463,7 +463,7 @@ function LandPage() {
                                         fontWeight: 'bold'
                                     }}
                                 >
-                                    VIEW TRAILER
+                                    VIEW 
                                 </button>
                                 {featuredMovieVideos.length > 0 && (
                                     <button 

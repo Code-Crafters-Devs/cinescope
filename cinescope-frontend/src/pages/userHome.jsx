@@ -8,6 +8,7 @@ import {
     faEdit, 
     faSignOutAlt,
     faHeart,
+    faPlayCircle,
     faHeart as faSolidHeart
 } from '@fortawesome/free-solid-svg-icons';
 import MovieDetails from '../components/movies/MovieDetails.jsx';
@@ -37,6 +38,7 @@ function UserHome() {
     const [userData, setUserData] = useState(null);
     const [error, setError] = useState(null);
     const [isFavoriteLoading, setIsFavoriteLoading] = useState({});
+    const [isWatchingLoading, setIsWatchingLoading] = useState({});
     const categories = ["Action", "Comedy", "Animation", "Horror", "Romantic"];
     const navigate = useNavigate();
 
@@ -70,7 +72,7 @@ function UserHome() {
         }
     }, []);
 
-    // Fetch user-specific data including favorites
+    // Fetch all user-specific data
     useEffect(() => {
         const fetchUserData = async () => {
             try {
@@ -91,17 +93,38 @@ function UserHome() {
                     }
                 });
 
-                if (profileResponse.ok && favoritesResponse.ok) {
+                // Fetch currently watching
+                const currentlyWatchingResponse = await fetch('http://localhost:5000/api/users/currently-watching', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                // Fetch watch history
+                const watchHistoryResponse = await fetch('http://localhost:5000/api/users/watch-history', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (profileResponse.ok && favoritesResponse.ok && 
+                    currentlyWatchingResponse.ok && watchHistoryResponse.ok) {
                     const profileData = await profileResponse.json();
                     const favoritesData = await favoritesResponse.json();
+                    const currentlyWatchingData = await currentlyWatchingResponse.json();
+                    const watchHistoryData = await watchHistoryResponse.json();
                     
                     setUserData(profileData);
                     setFavorites(favoritesData.favorites || []);
+                    setCurrentlyWatching(currentlyWatchingData.currentlyWatching || []);
+                    setRecentlyWatched(watchHistoryData || []);
                     
                     // Update localStorage
                     localStorage.setItem('user', JSON.stringify({
                         ...profileData,
-                        favorites: favoritesData.favorites || []
+                        favorites: favoritesData.favorites || [],
+                        currentlyWatching: currentlyWatchingData.currentlyWatching || [],
+                        recentlyWatched: watchHistoryData || []
                     }));
                 } else {
                     throw new Error('Failed to fetch user data');
@@ -251,9 +274,98 @@ function UserHome() {
             setIsFavoriteLoading(prev => ({ ...prev, [movie.id]: false }));
         }
     };
+
+    const toggleCurrentlyWatching = async (movie) => {
+        try {
+            setIsWatchingLoading(prev => ({ ...prev, [movie.id]: true }));
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate('/login');
+                return;
+            }
+    
+            const isCurrentlyWatching = currentlyWatching.some(m => m.tmdbId === movie.id);
+            const endpoint = `http://localhost:5000/api/users/currently-watching/${movie.id}`;
+            const method = 'POST'; // Always POST to toggle
+    
+            const response = await fetch(endpoint, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+    
+            if (!response.ok) {
+                throw new Error(`Failed to ${isCurrentlyWatching ? 'remove from' : 'add to'} currently watching`);
+            }
+    
+            const data = await response.json();
+    
+            // Update currently watching in state
+            setCurrentlyWatching(data.currentlyWatching || []);
+    
+            // Update localStorage
+            const currentUser = JSON.parse(localStorage.getItem('user'));
+            if (currentUser) {
+                localStorage.setItem('user', JSON.stringify({
+                    ...currentUser,
+                    currentlyWatching: data.currentlyWatching || []
+                }));
+            }
+        } catch (error) {
+            console.error("Error updating currently watching:", error);
+            setError(error.message);
+        } finally {
+            setIsWatchingLoading(prev => ({ ...prev, [movie.id]: false }));
+        }
+    };
     
     const isFavorite = (movieId) => {
         return favorites.some(movie => movie.tmdbId === movieId);
+    };
+
+    const isCurrentlyWatching = (movieId) => {
+        return currentlyWatching.some(movie => movie.tmdbId === movieId);
+    };
+
+    const playTrailer = async (movie) => {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                // Add to recently watched
+                const response = await fetch(`http://localhost:5000/api/users/recently-watched/${movie.id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    setRecentlyWatched(data.recentlyWatched || []);
+                    
+                    // Update localStorage
+                    const currentUser = JSON.parse(localStorage.getItem('user'));
+                    if (currentUser) {
+                        localStorage.setItem('user', JSON.stringify({
+                            ...currentUser,
+                            recentlyWatched: data.recentlyWatched || []
+                        }));
+                    }
+                }
+            }
+            
+            const videos = await fetchMovieVideos(movie.id);
+            const trailer = videos.find(vid => vid.type === "Trailer" && vid.site === "YouTube");
+            if (trailer) {
+                setTrailerUrl(trailer.key);
+                setSelectedMovie(movie);
+                setShowTrailerPage(true);
+            }
+        } catch (error) {
+            console.error("Error tracking watched movie:", error);
+        }
     };
 
     const handleProfileUpdate = async () => {
@@ -320,16 +432,6 @@ function UserHome() {
                 movie.title.toLowerCase().includes(query.toLowerCase())
             );
             setFilteredMovies(filtered);
-        }
-    };
-
-    const playTrailer = async (movie) => {
-        const videos = await fetchMovieVideos(movie.id);
-        const trailer = videos.find(vid => vid.type === "Trailer" && vid.site === "YouTube");
-        if (trailer) {
-            setTrailerUrl(trailer.key);
-            setSelectedMovie(movie);
-            setShowTrailerPage(true);
         }
     };
 
@@ -421,8 +523,8 @@ function UserHome() {
                             transition: 'transform 0.3s ease',
                             cursor: 'pointer',
                             position: 'relative',
-                            transform: isFavoriteLoading[movie.id] ? 'scale(0.98)' : 'scale(1)',
-                            opacity: isFavoriteLoading[movie.id] ? 0.8 : 1
+                            transform: isFavoriteLoading[movie.id] || isWatchingLoading[movie.id] ? 'scale(0.98)' : 'scale(1)',
+                            opacity: isFavoriteLoading[movie.id] || isWatchingLoading[movie.id] ? 0.8 : 1
                         }}
                     >
                         <div 
@@ -475,6 +577,43 @@ function UserHome() {
                                     <FontAwesomeIcon 
                                         icon={isFavorite(movie.id) ? faSolidHeart : faHeart} 
                                         color={isFavorite(movie.id) ? '#e50914' : 'white'}
+                                        style={{ transition: 'color 0.2s ease' }}
+                                    />
+                                )}
+                            </div>
+                            <div 
+                                style={{
+                                    position: 'absolute',
+                                    top: '50px',
+                                    right: '10px',
+                                    backgroundColor: 'rgba(0,0,0,0.7)',
+                                    borderRadius: '50%',
+                                    width: '36px',
+                                    height: '36px',
+                                    display: 'flex',
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    cursor: 'pointer',
+                                    zIndex: 2
+                                }}
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleCurrentlyWatching(movie);
+                                }}
+                            >
+                                {isWatchingLoading[movie.id] ? (
+                                    <div style={{
+                                        width: '16px',
+                                        height: '16px',
+                                        border: '2px solid #fff',
+                                        borderTop: '2px solid transparent',
+                                        borderRadius: '50%',
+                                        animation: 'spin 0.8s linear infinite'
+                                    }} />
+                                ) : (
+                                    <FontAwesomeIcon 
+                                        icon={faPlayCircle} 
+                                        color={isCurrentlyWatching(movie.id) ? '#e50914' : 'white'}
                                         style={{ transition: 'color 0.2s ease' }}
                                     />
                                 )}
@@ -1092,6 +1231,44 @@ function UserHome() {
                                                     color={isFavorite(featuredMovie.id) ? 'white' : '#e50914'}
                                                 />
                                                 {isFavorite(featuredMovie.id) ? 'FAVORITED' : 'ADD TO FAVORITES'}
+                                            </>
+                                        )}
+                                    </button>
+                                    <button 
+                                        onClick={() => toggleCurrentlyWatching(featuredMovie)}
+                                        disabled={isWatchingLoading[featuredMovie.id]}
+                                        style={{
+                                            backgroundColor: isCurrentlyWatching(featuredMovie.id) ? '#e50914' : 'rgba(255,255,255,0.1)',
+                                            color: 'white',
+                                            border: `2px solid ${isCurrentlyWatching(featuredMovie.id) ? '#e50914' : '#e50914'}`,
+                                            padding: '12px 30px',
+                                            fontSize: '1rem',
+                                            borderRadius: '4px',
+                                            cursor: 'pointer',
+                                            transition: 'background-color 0.3s',
+                                            fontWeight: 'bold',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px',
+                                            opacity: isWatchingLoading[featuredMovie.id] ? 0.7 : 1
+                                        }}
+                                    >
+                                        {isWatchingLoading[featuredMovie.id] ? (
+                                            <div style={{
+                                                width: '16px',
+                                                height: '16px',
+                                                border: '2px solid #fff',
+                                                borderTop: '2px solid transparent',
+                                                borderRadius: '50%',
+                                                animation: 'spin 0.8s linear infinite'
+                                            }} />
+                                        ) : (
+                                            <>
+                                                <FontAwesomeIcon 
+                                                    icon={faPlayCircle} 
+                                                    color={isCurrentlyWatching(featuredMovie.id) ? 'white' : '#e50914'}
+                                                />
+                                                {isCurrentlyWatching(featuredMovie.id) ? 'WATCHING' : 'CURRENTLY WATCHING'}
                                             </>
                                         )}
                                     </button>
