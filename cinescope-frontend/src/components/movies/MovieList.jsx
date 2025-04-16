@@ -4,7 +4,7 @@ import { faSearch, faArrowLeft, faStar } from '@fortawesome/free-solid-svg-icons
 import MovieDetails from './MovieDetails.jsx';
 import { useNavigate } from 'react-router-dom';
 
-const MovieList = ({ category, apiEndpoint }) => {
+const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
     const navigate = useNavigate();
     const [movies, setMovies] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -15,6 +15,15 @@ const MovieList = ({ category, apiEndpoint }) => {
     const [showTrailerPage, setShowTrailerPage] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredMovies, setFilteredMovies] = useState([]);
+
+    const handleBackNavigation = () => {
+        // Navigate to userHome if user is logged in, otherwise to home page
+        if (isUserLoggedIn) {
+            navigate('/userHome');
+        } else {
+            navigate('/');
+        }
+    };
 
     const fetchMovieVideos = useCallback(async (movieId) => {
         try {
@@ -125,7 +134,7 @@ const MovieList = ({ category, apiEndpoint }) => {
                     flex: 1
                 }}>
                     <button 
-                        onClick={() => navigate('/')}
+                        onClick={handleBackNavigation}
                         aria-label="Go back to home page"
                         style={{
                             background: 'transparent',

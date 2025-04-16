@@ -929,7 +929,7 @@ function UserHome() {
                                                 'Romantic': 'romance'
                                             };
                                             const path = categoryMap[category] || category.toLowerCase();
-                                            navigate(`/categories/${path}`);
+                                            navigate(`/user/categories/${path}`);
                                             setIsOpen(false);
                                         }}
                                     >
@@ -1055,7 +1055,7 @@ function UserHome() {
                                             fontWeight: 'bold'
                                         }}
                                     >
-                                        VIEW TRAILER
+                                        VIEW
                                     </button>
                                     <button 
                                         onClick={() => toggleFavorite(featuredMovie)}
