@@ -118,7 +118,7 @@ function UserHome() {
                     setFavorites(favoritesData.favorites || []);
                     setCurrentlyWatching(currentlyWatchingData.currentlyWatching || []);
                     setRecentlyWatched(watchHistoryData || []);
-
+                    
                     // Update localStorage
                     localStorage.setItem('user', JSON.stringify({
                         ...profileData,
@@ -435,16 +435,6 @@ function UserHome() {
         }
     };
 
-    const playTrailer = async (movie) => {
-        const videos = await fetchMovieVideos(movie.id);
-        const trailer = videos.find(vid => vid.type === "Trailer" && vid.site === "YouTube");
-        if (trailer) {
-            setTrailerUrl(trailer.key);
-            setSelectedMovie(movie);
-            setShowTrailerPage(true);
-        }
-    };
-
     const closeTrailerPage = () => {
         setShowTrailerPage(false);
         setTrailerUrl(null);
@@ -475,7 +465,7 @@ function UserHome() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
-
+    
 
     useEffect(() => {
         fetchMovies();
@@ -523,13 +513,11 @@ function UserHome() {
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
                 gap: '15px',
-                padding: '5px 0',
+                padding: '10px 0',
                 '@media (min-width: 768px)': {
                     gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
                     gap: '25px'
-                    padding: '10px 0'
                 }
-
             }}>
                 {movies.map((movie) => (
                     <div 
@@ -557,7 +545,6 @@ function UserHome() {
                                     width: '100%',
                                     height: 'auto',
                                     aspectRatio: '2/3',
-
                                     objectFit: 'cover',
                                     borderRadius: '8px',
                                     border: '1px solid #333'
@@ -570,10 +557,8 @@ function UserHome() {
                                     right: '10px',
                                     backgroundColor: 'rgba(0,0,0,0.7)',
                                     borderRadius: '50%',
-
                                     width: '30px',
                                     height: '30px',
-
                                     display: 'flex',
                                     justifyContent: 'center',
                                     alignItems: 'center',
@@ -583,7 +568,6 @@ function UserHome() {
                                         width: '36px',
                                         height: '36px'
                                     }
-
                                 }}
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -667,9 +651,8 @@ function UserHome() {
                                 justifyContent: 'space-between',
                                 fontSize: '0.8rem',
                                 '@media (min-width: 768px)': {
-                                    fontSize: '1rem'
+                                    fontSize: '0.85rem'
                                 }
-
                             }}>
                                 <span style={{ color: '#aaa' }}>
                                     {movie.release_date?.split('-')[0] || 'N/A'}
@@ -692,13 +675,16 @@ function UserHome() {
         return (
             <div style={{
                 display: 'flex',
-                gap: '25px',
+                gap: '15px',
                 marginBottom: '20px',
                 paddingBottom: '10px',
                 borderBottom: '1px solid #333',
                 overflowX: 'auto',
                 scrollbarWidth: 'none',
-                msOverflowStyle: 'none'
+                msOverflowStyle: 'none',
+                '@media (min-width: 768px)': {
+                    gap: '25px'
+                }
             }}>
                 {['Featured Movies', 'Popular in Your Country', 'Recently Watched', 'Currently Watching', 'Your Favorites'].map((section) => (
                     <button
@@ -708,7 +694,7 @@ function UserHome() {
                             background: 'none',
                             border: 'none',
                             color: activeSection === section ? '#e50914' : 'white',
-                            fontSize: '1.1rem',
+                            fontSize: '0.9rem',
                             fontWeight: activeSection === section ? 'bold' : 'normal',
                             padding: '8px 0',
                             cursor: 'pointer',
@@ -759,7 +745,6 @@ function UserHome() {
                         right: '20px',
                         maxWidth: '400px'
                     }
-
                 }}>
                     <span>{error}</span>
                     <button 
@@ -928,7 +913,6 @@ function UserHome() {
                         >
                             <FontAwesomeIcon icon={faUserCircle} />
                             <span style={{ fontSize: '0.9rem', '@media (min-width: 768px)': { fontSize: '1rem' } }}>
-
                                 Welcome, {userData?.firstName || 'User'}
                             </span>
                         </div>
@@ -1431,7 +1415,6 @@ function UserHome() {
                                             }}
                                         >
                                             {showVideoGallery ? 'HIDE' : 'VIDEOS'}
-
                                         </button>
                                     )}
                                 </div>
@@ -1471,7 +1454,6 @@ function UserHome() {
                                         gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
                                         gap: '20px'
                                     }
-
                                 }}>
                                     {featuredMovieVideos.map(video => (
                                         <div 
@@ -1518,7 +1500,6 @@ function UserHome() {
                                                         height: '50px',
                                                         fontSize: '1.5rem'
                                                     }
-
                                                 }}>
                                                     ▶
                                                 </div>
@@ -1599,7 +1580,6 @@ function UserHome() {
                                 }}
                             >
                                 {loading ? 'Loading...' : 'See more'} <span style={{ fontSize: '1rem', '@media (min-width: 768px)': { fontSize: '1.2rem' } }}>→</span>
-
                             </button>
                         )}
                     </div>
@@ -1615,7 +1595,6 @@ function UserHome() {
                             '@media (min-width: 768px)': {
                                 padding: '40px'
                             }
-
                         }}>
                             {searchQuery ? 
                                 `No movies found matching "${searchQuery}"` : 
@@ -1633,7 +1612,6 @@ function UserHome() {
                             '@media (min-width: 768px)': {
                                 padding: '20px'
                             }
-
                         }}>
                             Loading more movies...
                         </div>
