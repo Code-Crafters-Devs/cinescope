@@ -15,6 +15,19 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
     const [showTrailerPage, setShowTrailerPage] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredMovies, setFilteredMovies] = useState([]);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+    // Add a resize listener to detect screen size changes
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     const handleBackNavigation = () => {
         // Navigate to userHome if user is logged in, otherwise to home page
@@ -113,26 +126,84 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
         />;
     }
 
+    // Responsive styles for navbar based on screen size
+    const navbarStyle = {
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: isMobile ? '12px 15px' : '15px 30px',
+        backgroundColor: '#1a1a2e',
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        flexDirection: isMobile ? 'column' : 'row',
+        gap: isMobile ? '12px' : '0',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+    };
+
+    // Responsive styles for the brand and back button section
+    const navLeftStyle = {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '15px',
+        width: isMobile ? '100%' : 'auto',
+        justifyContent: isMobile ? 'space-between' : 'flex-start'
+    };
+
+    // Responsive styles for the search bar container
+    const searchContainerStyle = {
+        display: 'flex',
+        justifyContent: 'center',
+        width: isMobile ? '100%' : 'auto',
+        flex: isMobile ? '0 0 100%' : 1,
+        marginTop: isMobile ? '8px' : '0'
+    };
+
+    // Responsive grid for movie items
+    const movieGridStyle = {
+        display: 'grid',
+        gridTemplateColumns: isMobile ? 'repeat(auto-fill, minmax(140px, 1fr))' : 'repeat(auto-fill, minmax(180px, 1fr))',
+        gap: isMobile ? '15px' : '25px',
+        padding: '10px 0'
+    };
+
+    // Responsive styles for movie card
+    const movieCardStyle = (movie) => ({
+        borderRadius: '8px',
+        overflow: 'hidden',
+        transition: 'transform 0.3s ease',
+        cursor: 'pointer',
+    });
+
+    // Responsive poster image size
+    const posterImageStyle = {
+        width: '100%',
+        height: isMobile ? '210px' : '270px',
+        objectFit: 'cover',
+        borderRadius: '8px',
+        border: '1px solid #333'
+    };
+
+    // Responsive section title and load more button
+    const sectionHeaderStyle = {
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: isMobile ? 'flex-start' : 'center',
+        margin: '20px 0 15px 0',
+        flexDirection: isMobile ? 'column' : 'row',
+        gap: isMobile ? '10px' : '0'
+    };
+
+    const sectionTitleStyle = {
+        fontSize: isMobile ? '1.2rem' : '1.5rem',
+        marginBottom: isMobile ? '5px' : '0'
+    };
+
     return (
         <div className="categoryPage" style={{ backgroundColor: '#0f0f1a', minHeight: '100vh', color: 'white' }}>
             {/* Top Navigation Bar */}
-            <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '15px 30px',
-                backgroundColor: '#1a1a2e',
-                position: 'sticky',
-                top: 0,
-                zIndex: 100,
-                boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
-            }}>
-                <div style={{ 
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '20px',
-                    flex: 1
-                }}>
+            <div style={navbarStyle}>
+                <div style={navLeftStyle}>
                     <button 
                         onClick={handleBackNavigation}
                         aria-label="Go back to home page"
@@ -147,23 +218,15 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
                             gap: '8px',
                             padding: '8px 12px',
                             borderRadius: '4px',
-                            transition: 'all 0.3s ease',
-                            ':hover': {
-                                backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                            },
-                            '@media (max-width: 768px)': {
-                                'span': {
-                                    display: 'none'
-                                }
-                            }
+                            transition: 'all 0.3s ease'
                         }}
                     >
                         <FontAwesomeIcon icon={faArrowLeft} />
-                        <span>Back</span>
+                        {!isMobile && <span>Back</span>}
                     </button>
                     
                     <div style={{ 
-                        fontSize: '1.8rem', 
+                        fontSize: isMobile ? '1.5rem' : '1.8rem', 
                         fontWeight: 'bold', 
                         color: '#e50914',
                     }}>
@@ -171,12 +234,12 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
                     </div>
                 </div>
                 
-                <div style={{ 
-                    display: 'flex', 
-                    justifyContent: 'center',
-                    flex: 1
-                }}>
-                    <div style={{ position: 'relative', width: '100%', maxWidth: '500px' }}>
+                <div style={searchContainerStyle}>
+                    <div style={{ 
+                        position: 'relative', 
+                        width: '100%', 
+                        maxWidth: isMobile ? '100%' : '500px' 
+                    }}>
                         <input 
                             type="text" 
                             placeholder="Search movies..." 
@@ -189,7 +252,8 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
                                 width: '100%',
                                 backgroundColor: '#2c2c44',
                                 color: 'white',
-                                outline: 'none'
+                                outline: 'none',
+                                fontSize: isMobile ? '14px' : '16px'
                             }}
                         />
                         <FontAwesomeIcon 
@@ -208,15 +272,10 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
             </div>
 
             {/* Main Content */}
-            <div style={{ padding: '20px 30px' }}>
+            <div style={{ padding: isMobile ? '15px' : '20px 30px' }}>
                 <section>
-                    <div style={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center',
-                        margin: '30px 0 20px 0'
-                    }}>
-                        <h3 style={{ fontSize: '1.5rem' }}>
+                    <div style={sectionHeaderStyle}>
+                        <h3 style={sectionTitleStyle}>
                             {searchQuery ? `Search Results for "${searchQuery}"` : `${category} Movies`}
                         </h3>
                         {!searchQuery && (
@@ -233,8 +292,9 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
                                     gap: '5px',
                                     cursor: page >= totalPages ? 'default' : 'pointer',
                                     padding: 0,
-                                    fontSize: 'inherit',
-                                    opacity: page >= totalPages ? 0.7 : 1
+                                    fontSize: isMobile ? '14px' : '16px',
+                                    opacity: page >= totalPages ? 0.7 : 1,
+                                    alignSelf: isMobile ? 'flex-end' : 'auto'
                                 }}
                             >
                                 {loading ? 'Loading...' : 'See more'} <span style={{ fontSize: '1.2rem' }}>→</span>
@@ -242,25 +302,12 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
                         )}
                     </div>
                     
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                        gap: '25px',
-                        padding: '10px 0'
-                    }}>
+                    <div style={movieGridStyle}>
                         {filteredMovies.length > 0 ? (
                             filteredMovies.map((movie) => (
                                 <div 
                                     key={movie.id}
-                                    style={{
-                                        borderRadius: '8px',
-                                        overflow: 'hidden',
-                                        transition: 'transform 0.3s ease',
-                                        cursor: 'pointer',
-                                        ':hover': {
-                                            transform: 'scale(1.05)'
-                                        }
-                                    }}
+                                    style={movieCardStyle(movie)}
                                     onClick={() => playTrailer(movie)}
                                 >
                                     <img 
@@ -268,18 +315,13 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
                                             ? `https://image.tmdb.org/t/p/w500${movie.poster_path}`
                                             : 'https://via.placeholder.com/180x270?text=No+Poster'}
                                         alt={movie.title}
-                                        style={{
-                                            width: '100%',
-                                            height: '270px',
-                                            objectFit: 'cover',
-                                            borderRadius: '8px',
-                                            border: '1px solid #333'
-                                        }}
+                                        style={posterImageStyle}
+                                        loading="lazy"
                                     />
-                                    <div style={{ padding: '12px 5px' }}>
+                                    <div style={{ padding: isMobile ? '8px 3px' : '12px 5px' }}>
                                         <h4 style={{ 
                                             margin: '0 0 5px 0', 
-                                            fontSize: '0.95rem',
+                                            fontSize: isMobile ? '0.85rem' : '0.95rem',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis'
@@ -289,7 +331,7 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
                                         <div style={{ 
                                             display: 'flex', 
                                             justifyContent: 'space-between',
-                                            fontSize: '0.85rem'
+                                            fontSize: isMobile ? '0.75rem' : '0.85rem'
                                         }}>
                                             <span style={{ color: '#aaa' }}>
                                                 {movie.release_date?.split('-')[0] || 'N/A'}
@@ -301,7 +343,7 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
                                                 alignItems: 'center',
                                                 gap: '3px'
                                             }}>
-                                                <FontAwesomeIcon icon={faStar} style={{ fontSize: '0.8rem' }} />
+                                                <FontAwesomeIcon icon={faStar} style={{ fontSize: isMobile ? '0.7rem' : '0.8rem' }} />
                                                 {movie.vote_average?.toFixed(1) || '0.0'}
                                             </span>
                                         </div>
@@ -312,7 +354,7 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
                             <div style={{ 
                                 gridColumn: '1 / -1',
                                 textAlign: 'center',
-                                padding: '40px',
+                                padding: isMobile ? '20px' : '40px',
                                 color: '#aaa'
                             }}>
                                 {searchQuery ? 
@@ -327,7 +369,7 @@ const MovieList = ({ category, apiEndpoint, isUserLoggedIn }) => {
                         <div style={{ 
                             color: 'white', 
                             textAlign: 'center', 
-                            padding: '20px',
+                            padding: isMobile ? '15px' : '20px',
                             fontStyle: 'italic'
                         }}>
                             Loading more movies...

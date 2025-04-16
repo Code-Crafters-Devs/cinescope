@@ -465,6 +465,7 @@ function UserHome() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
+    
 
     useEffect(() => {
         fetchMovies();
@@ -510,9 +511,13 @@ function UserHome() {
         return (
             <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                gap: '25px',
-                padding: '10px 0'
+                gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                gap: '15px',
+                padding: '10px 0',
+                '@media (min-width: 768px)': {
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+                    gap: '25px'
+                }
             }}>
                 {movies.map((movie) => (
                     <div 
@@ -538,7 +543,8 @@ function UserHome() {
                                 alt={movie.title}
                                 style={{
                                     width: '100%',
-                                    height: '270px',
+                                    height: 'auto',
+                                    aspectRatio: '2/3',
                                     objectFit: 'cover',
                                     borderRadius: '8px',
                                     border: '1px solid #333'
@@ -551,13 +557,17 @@ function UserHome() {
                                     right: '10px',
                                     backgroundColor: 'rgba(0,0,0,0.7)',
                                     borderRadius: '50%',
-                                    width: '36px',
-                                    height: '36px',
+                                    width: '30px',
+                                    height: '30px',
                                     display: 'flex',
                                     justifyContent: 'center',
                                     alignItems: 'center',
                                     cursor: 'pointer',
-                                    zIndex: 2
+                                    zIndex: 2,
+                                    '@media (min-width: 768px)': {
+                                        width: '36px',
+                                        height: '36px'
+                                    }
                                 }}
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -588,13 +598,17 @@ function UserHome() {
                                     right: '10px',
                                     backgroundColor: 'rgba(0,0,0,0.7)',
                                     borderRadius: '50%',
-                                    width: '36px',
-                                    height: '36px',
+                                    width: '30px',
+                                    height: '30px',
                                     display: 'flex',
                                     justifyContent: 'center',
                                     alignItems: 'center',
                                     cursor: 'pointer',
-                                    zIndex: 2
+                                    zIndex: 2,
+                                    '@media (min-width: 768px)': {
+                                        width: '36px',
+                                        height: '36px'
+                                    }
                                 }}
                                 onClick={(e) => {
                                     e.stopPropagation();
@@ -619,20 +633,26 @@ function UserHome() {
                                 )}
                             </div>
                         </div>
-                        <div style={{ padding: '12px 5px' }}>
+                        <div style={{ padding: '10px 5px' }}>
                             <h4 style={{ 
                                 margin: '0 0 5px 0', 
-                                fontSize: '0.95rem',
+                                fontSize: '0.9rem',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
-                                textOverflow: 'ellipsis'
+                                textOverflow: 'ellipsis',
+                                '@media (min-width: 768px)': {
+                                    fontSize: '0.95rem'
+                                }
                             }}>
                                 {movie.title}
                             </h4>
                             <div style={{ 
                                 display: 'flex', 
                                 justifyContent: 'space-between',
-                                fontSize: '0.85rem'
+                                fontSize: '0.8rem',
+                                '@media (min-width: 768px)': {
+                                    fontSize: '0.85rem'
+                                }
                             }}>
                                 <span style={{ color: '#aaa' }}>
                                     {movie.release_date?.split('-')[0] || 'N/A'}
@@ -655,13 +675,16 @@ function UserHome() {
         return (
             <div style={{
                 display: 'flex',
-                gap: '25px',
+                gap: '15px',
                 marginBottom: '20px',
                 paddingBottom: '10px',
                 borderBottom: '1px solid #333',
                 overflowX: 'auto',
                 scrollbarWidth: 'none',
-                msOverflowStyle: 'none'
+                msOverflowStyle: 'none',
+                '@media (min-width: 768px)': {
+                    gap: '25px'
+                }
             }}>
                 {['Featured Movies', 'Popular in Your Country', 'Recently Watched', 'Currently Watching', 'Your Favorites'].map((section) => (
                     <button
@@ -671,13 +694,16 @@ function UserHome() {
                             background: 'none',
                             border: 'none',
                             color: activeSection === section ? '#e50914' : 'white',
-                            fontSize: '1.1rem',
+                            fontSize: '0.9rem',
                             fontWeight: activeSection === section ? 'bold' : 'normal',
                             padding: '8px 0',
                             cursor: 'pointer',
                             whiteSpace: 'nowrap',
                             position: 'relative',
-                            transition: 'color 0.3s ease'
+                            transition: 'color 0.3s ease',
+                            '@media (min-width: 768px)': {
+                                fontSize: '1.1rem'
+                            }
                         }}
                     >
                         {section}
@@ -705,6 +731,7 @@ function UserHome() {
                     position: 'fixed',
                     top: '20px',
                     right: '20px',
+                    left: '20px',
                     backgroundColor: '#e50914',
                     color: 'white',
                     padding: '15px',
@@ -712,7 +739,12 @@ function UserHome() {
                     zIndex: 3000,
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '10px'
+                    justifyContent: 'space-between',
+                    '@media (min-width: 768px)': {
+                        left: 'auto',
+                        right: '20px',
+                        maxWidth: '400px'
+                    }
                 }}>
                     <span>{error}</span>
                     <button 
@@ -761,38 +793,57 @@ function UserHome() {
                     >
                         ×
                     </button>
-                    <iframe
-                        title="Movie Trailer"
-                        width="80%"
-                        height="80%"
-                        src={`https://www.youtube.com/embed/${trailerUrl}?autoplay=1`}
-                        frameBorder="0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                        style={{ zIndex: 2000 }}
-                    ></iframe>
+                    <div style={{
+                        width: '100%',
+                        height: '100%',
+                        padding: '20px',
+                        '@media (min-width: 768px)': {
+                            width: '80%',
+                            height: '80%'
+                        }
+                    }}>
+                        <iframe
+                            title="Movie Trailer"
+                            width="100%"
+                            height="100%"
+                            src={`https://www.youtube.com/embed/${trailerUrl}?autoplay=1`}
+                            frameBorder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                            style={{ zIndex: 2000 }}
+                        ></iframe>
+                    </div>
                 </div>
             )}
 
             <div style={{
                 display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '15px 30px',
+                flexDirection: 'column',
+                gap: '15px',
+                padding: '15px',
                 backgroundColor: '#1a1a2e',
                 position: 'sticky',
                 top: 0,
                 zIndex: 100,
-                boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
+                boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
+                '@media (min-width: 768px)': {
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    padding: '15px 30px'
+                }
             }}>
                 <div style={{ 
-                    fontSize: '1.8rem', 
+                    fontSize: '1.5rem', 
                     fontWeight: 'bold', 
                     color: '#e50914',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
-                    flex: 1
+                    '@media (min-width: 768px)': {
+                        fontSize: '1.8rem',
+                        flex: 1
+                    }
                 }}>
                     <span>CineScope</span>
                 </div>
@@ -800,7 +851,9 @@ function UserHome() {
                 <div style={{ 
                     display: 'flex', 
                     justifyContent: 'center',
-                    flex: 1
+                    '@media (min-width: 768px)': {
+                        flex: 1
+                    }
                 }}>
                     <div style={{ position: 'relative', width: '100%', maxWidth: '500px' }}>
                         <input 
@@ -835,24 +888,31 @@ function UserHome() {
                 <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
-                    gap: '15px',
+                    gap: '10px',
                     justifyContent: 'flex-end',
-                    flex: 1
+                    '@media (min-width: 768px)': {
+                        gap: '15px',
+                        flex: 1
+                    }
                 }}>
                     <div style={{ position: 'relative' }}>
                         <div 
                             style={{
                                 cursor: 'pointer',
-                                fontSize: '1.5rem',
+                                fontSize: '1.2rem',
                                 color: '#e50914',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '10px'
+                                gap: '8px',
+                                '@media (min-width: 768px)': {
+                                    fontSize: '1.5rem',
+                                    gap: '10px'
+                                }
                             }}
                             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                         >
                             <FontAwesomeIcon icon={faUserCircle} />
-                            <span style={{ fontSize: '1rem' }}>
+                            <span style={{ fontSize: '0.9rem', '@media (min-width: 768px)': { fontSize: '1rem' } }}>
                                 Welcome, {userData?.firstName || 'User'}
                             </span>
                         </div>
@@ -1025,13 +1085,19 @@ function UserHome() {
                                 background: 'red',
                                 border: 'none',
                                 color: 'white',
-                                padding: '8px 20px',
+                                padding: '8px 15px',
                                 cursor: 'pointer',
                                 display: 'flex',
                                 fontWeight: 'bold',
-                                gap: '15px',
+                                gap: '10px',
                                 alignItems: 'center',
                                 borderRadius: '4px',
+                                fontSize: '0.9rem',
+                                '@media (min-width: 768px)': {
+                                    padding: '8px 20px',
+                                    gap: '15px',
+                                    fontSize: '1rem'
+                                }
                             }}
                         >
                             Categories {isOpen ? <FontAwesomeIcon icon={faAngleUp} /> : <FontAwesomeIcon icon={faAngleDown} />}
@@ -1043,19 +1109,26 @@ function UserHome() {
                                 right: 0,
                                 backgroundColor: '#2c2c44',
                                 borderRadius: '4px',
-                                width: '180px',
+                                width: '150px',
                                 boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
                                 zIndex: 1000,
-                                marginTop: '10px'
+                                marginTop: '10px',
+                                '@media (min-width: 768px)': {
+                                    width: '180px'
+                                }
                             }}>
                                 {categories.map((category) => (
                                     <div 
                                         key={category}
                                         style={{
-                                            padding: '12px 20px',
+                                            padding: '10px 15px',
                                             cursor: 'pointer',
                                             borderBottom: '1px solid #3e3e5e',
-                                            transition: 'background-color 0.2s'
+                                            transition: 'background-color 0.2s',
+                                            fontSize: '0.9rem',
+                                            '@media (min-width: 768px)': {
+                                                padding: '12px 20px'
+                                            }
                                         }}
                                         onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3e3e5e'}
                                         onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -1081,7 +1154,7 @@ function UserHome() {
                 </div>
             </div>
 
-            <div style={{ padding: '20px 30px' }}>
+            <div style={{ padding: '15px', '@media (min-width: 768px)': { padding: '20px 30px' } }}>
                 {activeSection === 'Featured Movies' && featuredMovie && (
                     <div>
                         <section 
@@ -1089,10 +1162,13 @@ function UserHome() {
                                 position: 'relative',
                                 borderRadius: '8px',
                                 margin: '20px 0',
-                                minHeight: '70vh',
+                                minHeight: '50vh',
                                 display: 'flex',
                                 alignItems: 'center',
-                                overflow: 'hidden'
+                                overflow: 'hidden',
+                                '@media (min-width: 768px)': {
+                                    minHeight: '70vh'
+                                }
                             }}
                             onMouseEnter={handleMouseEnter}
                             onMouseLeave={handleMouseLeave}
@@ -1151,31 +1227,58 @@ function UserHome() {
                             }}></div>
                             
                             <div style={{
-                                maxWidth: '600px',
-                                padding: '40px',
+                                maxWidth: '100%',
+                                padding: '20px',
                                 position: 'relative',
-                                zIndex: 3
+                                zIndex: 3,
+                                '@media (min-width: 768px)': {
+                                    maxWidth: '600px',
+                                    padding: '40px'
+                                }
                             }}>
-                                <h2 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>
+                                <h2 style={{ 
+                                    fontSize: '1.8rem', 
+                                    marginBottom: '10px',
+                                    '@media (min-width: 768px)': {
+                                        fontSize: '2.5rem'
+                                    }
+                                }}>
                                     {featuredMovie?.title || 'Featured Movie'}
                                 </h2>
                                 <div style={{ 
                                     display: 'flex', 
                                     justifyContent: 'space-between', 
                                     marginBottom: '20px',
-                                    fontWeight: 'bold'
+                                    fontWeight: 'bold',
+                                    fontSize: '0.9rem',
+                                    '@media (min-width: 768px)': {
+                                        fontSize: '1rem'
+                                    }
                                 }}>
                                     <span>Rating: {featuredMovie?.vote_average?.toFixed(1) || 'N/A'}/10</span>
                                     <span>Released: {featuredMovie?.release_date?.split('-')[0] || 'N/A'}</span>
                                 </div>
                                 <p style={{ 
                                     lineHeight: '1.6', 
-                                    marginBottom: '25px',
-                                    fontSize: '1.1rem'
+                                    marginBottom: '20px',
+                                    fontSize: '0.95rem',
+                                    '@media (min-width: 768px)': {
+                                        fontSize: '1.1rem',
+                                        marginBottom: '25px'
+                                    }
                                 }}>
                                     {featuredMovie?.overview || 'Movie description will appear here.'}
                                 </p>
-                                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                                <div style={{ 
+                                    display: 'grid',
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                                    gap: '10px',
+                                    '@media (min-width: 768px)': {
+                                        display: 'flex',
+                                        gap: '15px',
+                                        flexWrap: 'wrap'
+                                    }
+                                }}>
                                     <button 
                                         onClick={() => {
                                             if (featuredMovie) {
@@ -1186,12 +1289,16 @@ function UserHome() {
                                             backgroundColor: '#e50914',
                                             color: 'white',
                                             border: 'none',
-                                            padding: '12px 30px',
-                                            fontSize: '1rem',
+                                            padding: '10px',
+                                            fontSize: '0.9rem',
                                             borderRadius: '4px',
                                             cursor: 'pointer',
                                             transition: 'background-color 0.3s',
-                                            fontWeight: 'bold'
+                                            fontWeight: 'bold',
+                                            '@media (min-width: 768px)': {
+                                                padding: '12px 30px',
+                                                fontSize: '1rem'
+                                            }
                                         }}
                                     >
                                         VIEW
@@ -1203,16 +1310,22 @@ function UserHome() {
                                             backgroundColor: isFavorite(featuredMovie.id) ? '#e50914' : 'rgba(255,255,255,0.1)',
                                             color: 'white',
                                             border: `2px solid ${isFavorite(featuredMovie.id) ? '#e50914' : '#e50914'}`,
-                                            padding: '12px 30px',
-                                            fontSize: '1rem',
+                                            padding: '10px',
+                                            fontSize: '0.9rem',
                                             borderRadius: '4px',
                                             cursor: 'pointer',
                                             transition: 'background-color 0.3s',
                                             fontWeight: 'bold',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: '8px',
-                                            opacity: isFavoriteLoading[featuredMovie.id] ? 0.7 : 1
+                                            justifyContent: 'center',
+                                            gap: '5px',
+                                            opacity: isFavoriteLoading[featuredMovie.id] ? 0.7 : 1,
+                                            '@media (min-width: 768px)': {
+                                                padding: '12px 30px',
+                                                fontSize: '1rem',
+                                                gap: '8px'
+                                            }
                                         }}
                                     >
                                         {isFavoriteLoading[featuredMovie.id] ? (
@@ -1230,7 +1343,9 @@ function UserHome() {
                                                     icon={isFavorite(featuredMovie.id) ? faSolidHeart : faHeart} 
                                                     color={isFavorite(featuredMovie.id) ? 'white' : '#e50914'}
                                                 />
-                                                {isFavorite(featuredMovie.id) ? 'FAVORITED' : 'ADD TO FAVORITES'}
+                                                <span style={{ display: 'none', '@media (min-width: 768px)': { display: 'inline' } }}>
+                                                    {isFavorite(featuredMovie.id) ? 'FAVORITED' : 'ADD TO FAVORITES'}
+                                                </span>
                                             </>
                                         )}
                                     </button>
@@ -1241,16 +1356,22 @@ function UserHome() {
                                             backgroundColor: isCurrentlyWatching(featuredMovie.id) ? '#e50914' : 'rgba(255,255,255,0.1)',
                                             color: 'white',
                                             border: `2px solid ${isCurrentlyWatching(featuredMovie.id) ? '#e50914' : '#e50914'}`,
-                                            padding: '12px 30px',
-                                            fontSize: '1rem',
+                                            padding: '10px',
+                                            fontSize: '0.9rem',
                                             borderRadius: '4px',
                                             cursor: 'pointer',
                                             transition: 'background-color 0.3s',
                                             fontWeight: 'bold',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            gap: '8px',
-                                            opacity: isWatchingLoading[featuredMovie.id] ? 0.7 : 1
+                                            justifyContent: 'center',
+                                            gap: '5px',
+                                            opacity: isWatchingLoading[featuredMovie.id] ? 0.7 : 1,
+                                            '@media (min-width: 768px)': {
+                                                padding: '12px 30px',
+                                                fontSize: '1rem',
+                                                gap: '8px'
+                                            }
                                         }}
                                     >
                                         {isWatchingLoading[featuredMovie.id] ? (
@@ -1268,7 +1389,9 @@ function UserHome() {
                                                     icon={faPlayCircle} 
                                                     color={isCurrentlyWatching(featuredMovie.id) ? 'white' : '#e50914'}
                                                 />
-                                                {isCurrentlyWatching(featuredMovie.id) ? 'WATCHING' : 'CURRENTLY WATCHING'}
+                                                <span style={{ display: 'none', '@media (min-width: 768px)': { display: 'inline' } }}>
+                                                    {isCurrentlyWatching(featuredMovie.id) ? 'WATCHING' : 'CURRENTLY WATCHING'}
+                                                </span>
                                             </>
                                         )}
                                     </button>
@@ -1279,15 +1402,19 @@ function UserHome() {
                                                 backgroundColor: 'rgba(255,255,255,0.1)',
                                                 color: 'white',
                                                 border: '2px solid #e50914',
-                                                padding: '12px 30px',
-                                                fontSize: '1rem',
+                                                padding: '10px',
+                                                fontSize: '0.9rem',
                                                 borderRadius: '4px',
                                                 cursor: 'pointer',
                                                 transition: 'background-color 0.3s',
-                                                fontWeight: 'bold'
+                                                fontWeight: 'bold',
+                                                '@media (min-width: 768px)': {
+                                                    padding: '12px 30px',
+                                                    fontSize: '1rem'
+                                                }
                                             }}
                                         >
-                                            {showVideoGallery ? 'HIDE VIDEOS' : 'SHOW ALL VIDEOS'}
+                                            {showVideoGallery ? 'HIDE' : 'VIDEOS'}
                                         </button>
                                     )}
                                 </div>
@@ -1296,24 +1423,37 @@ function UserHome() {
                         
                         {showVideoGallery && featuredMovieVideos.length > 0 && (
                             <section style={{
-                                padding: '20px',
+                                padding: '15px',
                                 backgroundColor: 'rgba(26, 26, 46, 0.8)',
                                 borderRadius: '8px',
-                                marginBottom: '30px'
+                                marginBottom: '20px',
+                                '@media (min-width: 768px)': {
+                                    padding: '20px',
+                                    marginBottom: '30px'
+                                }
                             }}>
                                 <h3 style={{ 
-                                    fontSize: '1.3rem', 
-                                    marginBottom: '20px',
+                                    fontSize: '1.1rem', 
+                                    marginBottom: '15px',
                                     borderBottom: '1px solid #333',
-                                    paddingBottom: '10px'
+                                    paddingBottom: '8px',
+                                    '@media (min-width: 768px)': {
+                                        fontSize: '1.3rem',
+                                        marginBottom: '20px',
+                                        paddingBottom: '10px'
+                                    }
                                 }}>
                                     Videos for {featuredMovie?.title}
                                 </h3>
                                 
                                 <div style={{
                                     display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                                    gap: '20px'
+                                    gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                                    gap: '15px',
+                                    '@media (min-width: 768px)': {
+                                        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                                        gap: '20px'
+                                    }
                                 }}>
                                     {featuredMovieVideos.map(video => (
                                         <div 
@@ -1349,30 +1489,42 @@ function UserHome() {
                                                     transform: 'translate(-50%, -50%)',
                                                     backgroundColor: 'rgba(229, 9, 20, 0.8)',
                                                     borderRadius: '50%',
-                                                    width: '50px',
-                                                    height: '50px',
+                                                    width: '40px',
+                                                    height: '40px',
                                                     display: 'flex',
                                                     justifyContent: 'center',
                                                     alignItems: 'center',
-                                                    fontSize: '1.5rem'
+                                                    fontSize: '1.2rem',
+                                                    '@media (min-width: 768px)': {
+                                                        width: '50px',
+                                                        height: '50px',
+                                                        fontSize: '1.5rem'
+                                                    }
                                                 }}>
                                                     ▶
                                                 </div>
                                             </div>
-                                            <div style={{ padding: '10px 5px' }}>
+                                            <div style={{ padding: '8px 5px', '@media (min-width: 768px)': { padding: '10px 5px' } }}>
                                                 <p style={{ 
                                                     margin: '0', 
                                                     fontWeight: 'bold',
                                                     whiteSpace: 'nowrap',
                                                     overflow: 'hidden',
-                                                    textOverflow: 'ellipsis'
+                                                    textOverflow: 'ellipsis',
+                                                    fontSize: '0.9rem',
+                                                    '@media (min-width: 768px)': {
+                                                        fontSize: '1rem'
+                                                    }
                                                 }}>
                                                     {video.name}
                                                 </p>
                                                 <p style={{
                                                     margin: '5px 0 0',
-                                                    fontSize: '0.8rem',
-                                                    color: '#aaa'
+                                                    fontSize: '0.75rem',
+                                                    color: '#aaa',
+                                                    '@media (min-width: 768px)': {
+                                                        fontSize: '0.8rem'
+                                                    }
                                                 }}>
                                                     {video.type}
                                                 </p>
@@ -1385,7 +1537,7 @@ function UserHome() {
                     </div>
                 )}
 
-                <section style={{ margin: '40px 0' }}>
+                <section style={{ margin: '30px 0', '@media (min-width: 768px)': { margin: '40px 0' } }}>
                     {renderSectionNav()}
                     {activeSection === 'Your Favorites' && renderMovieGrid(favorites, 'Your Favorites')}
                     {activeSection === 'Currently Watching' && renderMovieGrid(currentlyWatching, 'Currently Watching')}
@@ -1398,9 +1550,12 @@ function UserHome() {
                         display: 'flex', 
                         justifyContent: 'space-between', 
                         alignItems: 'center',
-                        margin: '30px 0 20px 0'
+                        margin: '20px 0 15px 0',
+                        '@media (min-width: 768px)': {
+                            margin: '30px 0 20px 0'
+                        }
                     }}>
-                        <h3 style={{ fontSize: '1.5rem' }}>
+                        <h3 style={{ fontSize: '1.2rem', '@media (min-width: 768px)': { fontSize: '1.5rem' } }}>
                             {searchQuery ? `Search Results for "${searchQuery}"` : 'Featured Movies'}
                         </h3>
                         {!searchQuery && (
@@ -1417,11 +1572,14 @@ function UserHome() {
                                     gap: '5px',
                                     cursor: page >= totalPages ? 'default' : 'pointer',
                                     padding: 0,
-                                    fontSize: 'inherit',
-                                    opacity: page >= totalPages ? 0.7 : 1
+                                    fontSize: '0.9rem',
+                                    opacity: page >= totalPages ? 0.7 : 1,
+                                    '@media (min-width: 768px)': {
+                                        fontSize: '1rem'
+                                    }
                                 }}
                             >
-                                {loading ? 'Loading...' : 'See more'} <span style={{ fontSize: '1.2rem' }}>→</span>
+                                {loading ? 'Loading...' : 'See more'} <span style={{ fontSize: '1rem', '@media (min-width: 768px)': { fontSize: '1.2rem' } }}>→</span>
                             </button>
                         )}
                     </div>
@@ -1432,8 +1590,11 @@ function UserHome() {
                         <div style={{ 
                             gridColumn: '1 / -1',
                             textAlign: 'center',
-                            padding: '40px',
-                            color: '#aaa'
+                            padding: '30px',
+                            color: '#aaa',
+                            '@media (min-width: 768px)': {
+                                padding: '40px'
+                            }
                         }}>
                             {searchQuery ? 
                                 `No movies found matching "${searchQuery}"` : 
@@ -1446,8 +1607,11 @@ function UserHome() {
                         <div style={{ 
                             color: 'white', 
                             textAlign: 'center', 
-                            padding: '20px',
-                            fontStyle: 'italic'
+                            padding: '15px',
+                            fontStyle: 'italic',
+                            '@media (min-width: 768px)': {
+                                padding: '20px'
+                            }
                         }}>
                             Loading more movies...
                         </div>

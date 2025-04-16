@@ -84,7 +84,14 @@ function SignupForm() {
       padding: '2rem',
       display: 'flex',
       justifyContent: 'center',
-      alignItems: 'center'
+      alignItems: 'center',
+      /* Added responsive padding */
+      '@media (max-width: 768px)': {
+        padding: '1rem',
+      },
+      '@media (max-width: 480px)': {
+        padding: '0.5rem',
+      }
     }}>
       <div style={{
         maxWidth: '500px',
@@ -92,12 +99,27 @@ function SignupForm() {
         padding: '2rem',
         backgroundColor: '#1a1a2e',
         borderRadius: '8px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        /* Added responsive padding and mobile full-screen */
+        '@media (max-width: 768px)': {
+          padding: '1.5rem',
+        },
+        '@media (max-width: 480px)': {
+          padding: '1rem',
+          borderRadius: '0',
+          maxHeight: '100vh',
+          overflow: 'auto',
+        }
       }}>
         <h2 style={{
           textAlign: 'center',
           color: '#e50914',
-          marginBottom: '1.5rem'
+          marginBottom: '1.5rem',
+          /* Added responsive font size */
+          '@media (max-width: 480px)': {
+            fontSize: '1.5rem',
+            marginBottom: '1rem',
+          }
         }}>Create Your Account</h2>
 
         {serverError && (
@@ -107,7 +129,12 @@ function SignupForm() {
             borderRadius: '4px',
             padding: '0.75rem',
             marginBottom: '1rem',
-            color: '#e50914'
+            color: '#e50914',
+            /* Added responsive font size */
+            '@media (max-width: 480px)': {
+              padding: '0.5rem',
+              fontSize: '0.875rem',
+            }
           }}>
             {serverError}
           </div>
@@ -118,7 +145,12 @@ function SignupForm() {
             <label style={{
               display: 'block',
               marginBottom: '0.5rem',
-              color: '#fff'
+              color: '#fff',
+              /* Added responsive font size */
+              '@media (max-width: 480px)': {
+                fontSize: '0.875rem',
+                marginBottom: '0.25rem',
+              }
             }}>First Name</label>
             <input
               type="text"
@@ -131,7 +163,12 @@ function SignupForm() {
                 borderRadius: '4px',
                 border: errors.firstName ? '1px solid #e50914' : '1px solid #333',
                 backgroundColor: '#2c2c44',
-                color: '#fff'
+                color: '#fff',
+                /* Added responsive padding */
+                '@media (max-width: 480px)': {
+                  padding: '0.5rem',
+                  fontSize: '0.875rem',
+                }
               }}
             />
             {errors.firstName && <p style={{ color: '#e50914', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.firstName}</p>}
@@ -141,7 +178,12 @@ function SignupForm() {
             <label style={{
               display: 'block',
               marginBottom: '0.5rem',
-              color: '#fff'
+              color: '#fff',
+              /* Added responsive font size */
+              '@media (max-width: 480px)': {
+                fontSize: '0.875rem',
+                marginBottom: '0.25rem',
+              }
             }}>Last Name</label>
             <input
               type="text"
@@ -154,7 +196,12 @@ function SignupForm() {
                 borderRadius: '4px',
                 border: errors.lastName ? '1px solid #e50914' : '1px solid #333',
                 backgroundColor: '#2c2c44',
-                color: '#fff'
+                color: '#fff',
+                /* Added responsive padding */
+                '@media (max-width: 480px)': {
+                  padding: '0.5rem',
+                  fontSize: '0.875rem',
+                }
               }}
             />
             {errors.lastName && <p style={{ color: '#e50914', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.lastName}</p>}
@@ -164,7 +211,12 @@ function SignupForm() {
             <label style={{
               display: 'block',
               marginBottom: '0.5rem',
-              color: '#fff'
+              color: '#fff',
+              /* Added responsive font size */
+              '@media (max-width: 480px)': {
+                fontSize: '0.875rem',
+                marginBottom: '0.25rem',
+              }
             }}>Email</label>
             <input
               type="email"
@@ -177,7 +229,12 @@ function SignupForm() {
                 borderRadius: '4px',
                 border: errors.email ? '1px solid #e50914' : '1px solid #333',
                 backgroundColor: '#2c2c44',
-                color: '#fff'
+                color: '#fff',
+                /* Added responsive padding */
+                '@media (max-width: 480px)': {
+                  padding: '0.5rem',
+                  fontSize: '0.875rem',
+                }
               }}
             />
             {errors.email && <p style={{ color: '#e50914', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.email}</p>}
@@ -187,7 +244,12 @@ function SignupForm() {
             <label style={{
               display: 'block',
               marginBottom: '0.5rem',
-              color: '#fff'
+              color: '#fff',
+              /* Added responsive font size */
+              '@media (max-width: 480px)': {
+                fontSize: '0.875rem',
+                marginBottom: '0.25rem',
+              }
             }}>Password</label>
             <input
               type="password"
@@ -200,7 +262,12 @@ function SignupForm() {
                 borderRadius: '4px',
                 border: errors.password ? '1px solid #e50914' : '1px solid #333',
                 backgroundColor: '#2c2c44',
-                color: '#fff'
+                color: '#fff',
+                /* Added responsive padding */
+                '@media (max-width: 480px)': {
+                  padding: '0.5rem',
+                  fontSize: '0.875rem',
+                }
               }}
             />
             {errors.password && <p style={{ color: '#e50914', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.password}</p>}
@@ -210,7 +277,12 @@ function SignupForm() {
             <label style={{
               display: 'block',
               marginBottom: '0.5rem',
-              color: '#fff'
+              color: '#fff',
+              /* Added responsive font size */
+              '@media (max-width: 480px)': {
+                fontSize: '0.875rem',
+                marginBottom: '0.25rem',
+              }
             }}>Confirm Password</label>
             <input
               type="password"
@@ -223,7 +295,12 @@ function SignupForm() {
                 borderRadius: '4px',
                 border: errors.confirmPassword ? '1px solid #e50914' : '1px solid #333',
                 backgroundColor: '#2c2c44',
-                color: '#fff'
+                color: '#fff',
+                /* Added responsive padding */
+                '@media (max-width: 480px)': {
+                  padding: '0.5rem',
+                  fontSize: '0.875rem',
+                }
               }}
             />
             {errors.confirmPassword && <p style={{ color: '#e50914', fontSize: '0.8rem', marginTop: '0.25rem' }}>{errors.confirmPassword}</p>}
@@ -233,7 +310,12 @@ function SignupForm() {
             <label style={{
               display: 'block',
               marginBottom: '0.5rem',
-              color: '#fff'
+              color: '#fff',
+              /* Added responsive font size */
+              '@media (max-width: 480px)': {
+                fontSize: '0.875rem',
+                marginBottom: '0.25rem',
+              }
             }}>Country</label>
             <select
               name="country"
@@ -245,7 +327,12 @@ function SignupForm() {
                 borderRadius: '4px',
                 border: errors.country ? '1px solid #e50914' : '1px solid #333',
                 backgroundColor: '#2c2c44',
-                color: '#fff'
+                color: '#fff',
+                /* Added responsive padding */
+                '@media (max-width: 480px)': {
+                  padding: '0.5rem',
+                  fontSize: '0.875rem',
+                }
               }}
             >
               <option value="">Select Country</option>
@@ -271,7 +358,13 @@ function SignupForm() {
               fontSize: '1rem',
               fontWeight: 'bold',
               cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.3s'
+              transition: 'background-color 0.3s',
+              /* Added responsive padding & font size */
+              '@media (max-width: 480px)': {
+                padding: '0.5rem',
+                fontSize: '0.875rem',
+                marginTop: '1rem',
+              }
             }}
             onMouseOver={(e) => !loading && (e.target.style.backgroundColor = '#f40612')}
             onMouseOut={(e) => !loading && (e.target.style.backgroundColor = '#e50914')}
@@ -282,7 +375,11 @@ function SignupForm() {
           <p style={{
             textAlign: 'center',
             marginTop: '1rem',
-            color: '#aaa'
+            color: '#aaa',
+            /* Added responsive font size */
+            '@media (max-width: 480px)': {
+              fontSize: '0.875rem',
+            }
           }}>
             Already have an account?{' '}
             <span

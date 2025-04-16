@@ -51,7 +51,14 @@ function LoginForm() {
       padding: '2rem',
       display: 'flex',
       justifyContent: 'center',
-      alignItems: 'center'
+      alignItems: 'center',
+      /* Added responsive padding */
+      '@media (max-width: 768px)': {
+        padding: '1rem',
+      },
+      '@media (max-width: 480px)': {
+        padding: '0.5rem',
+      }
     }}>
       <div style={{
         maxWidth: '500px',
@@ -59,12 +66,30 @@ function LoginForm() {
         padding: '2rem',
         backgroundColor: '#1a1a2e',
         borderRadius: '8px',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        /* Added responsive padding */
+        '@media (max-width: 768px)': {
+          padding: '1.5rem',
+        },
+        '@media (max-width: 480px)': {
+          padding: '1rem',
+          borderRadius: '0',
+          maxWidth: '100%',
+          height: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+        }
       }}>
         <h2 style={{
           textAlign: 'center',
           color: '#e50914',
-          marginBottom: '1.5rem'
+          marginBottom: '1.5rem',
+          /* Added responsive font size */
+          '@media (max-width: 480px)': {
+            fontSize: '1.5rem',
+            marginBottom: '1rem',
+          }
         }}>Login</h2>
         
         {error && (
@@ -74,7 +99,12 @@ function LoginForm() {
             borderRadius: '4px',
             padding: '0.75rem',
             marginBottom: '1rem',
-            color: '#e50914'
+            color: '#e50914',
+            /* Added responsive font size */
+            '@media (max-width: 480px)': {
+              padding: '0.5rem',
+              fontSize: '0.875rem',
+            }
           }}>
             {error}
           </div>
@@ -85,7 +115,12 @@ function LoginForm() {
             <label style={{
               display: 'block',
               marginBottom: '0.5rem',
-              color: '#fff'
+              color: '#fff',
+              /* Added responsive font size */
+              '@media (max-width: 480px)': {
+                fontSize: '0.875rem',
+                marginBottom: '0.25rem',
+              }
             }}>Email</label>
             <input
               type="email"
@@ -99,7 +134,12 @@ function LoginForm() {
                 borderRadius: '4px',
                 border: '1px solid #333',
                 backgroundColor: '#2c2c44',
-                color: '#fff'
+                color: '#fff',
+                /* Added responsive padding */
+                '@media (max-width: 480px)': {
+                  padding: '0.5rem',
+                  fontSize: '0.875rem',
+                }
               }}
             />
           </div>
@@ -107,7 +147,12 @@ function LoginForm() {
             <label style={{
               display: 'block',
               marginBottom: '0.5rem',
-              color: '#fff'
+              color: '#fff',
+              /* Added responsive font size */
+              '@media (max-width: 480px)': {
+                fontSize: '0.875rem',
+                marginBottom: '0.25rem',
+              }
             }}>Password</label>
             <input
               type="password"
@@ -121,7 +166,12 @@ function LoginForm() {
                 borderRadius: '4px',
                 border: '1px solid #333',
                 backgroundColor: '#2c2c44',
-                color: '#fff'
+                color: '#fff',
+                /* Added responsive padding */
+                '@media (max-width: 480px)': {
+                  padding: '0.5rem',
+                  fontSize: '0.875rem',
+                }
               }}
             />
           </div>
@@ -139,7 +189,13 @@ function LoginForm() {
               fontSize: '1rem',
               fontWeight: 'bold',
               cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'background-color 0.3s'
+              transition: 'background-color 0.3s',
+              /* Added responsive padding & font size */
+              '@media (max-width: 480px)': {
+                padding: '0.5rem',
+                fontSize: '0.875rem',
+                marginTop: '1rem',
+              }
             }}
             onMouseOver={(e) => !loading && (e.target.style.backgroundColor = '#f40612')}
             onMouseOut={(e) => !loading && (e.target.style.backgroundColor = '#e50914')}
@@ -149,7 +205,11 @@ function LoginForm() {
           <p style={{
             textAlign: 'center',
             marginTop: '1rem',
-            color: '#aaa'
+            color: '#aaa',
+            /* Added responsive font size */
+            '@media (max-width: 480px)': {
+              fontSize: '0.875rem',
+            }
           }}>
             Don't have an account?{' '}
             <a
