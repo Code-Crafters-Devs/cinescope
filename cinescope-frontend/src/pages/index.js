@@ -20,9 +20,21 @@ function LandPage() {
     const [showTrailerPage, setShowTrailerPage] = useState(false);
     const [selectedMovie, setSelectedMovie] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+
     const categories = ["Action", "Comedy", "Animation", "Horror", "Romantic"];
     const logoCinescope = process.env.PUBLIC_URL + '/logo-cinescope.jpeg';
     const navigate = useNavigate();
+
+    // Track window resize for responsive adjustments
+    useEffect(() => {
+        const handleResize = () => {
+            setWindowWidth(window.innerWidth);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     const fetchMovieVideos = useCallback(async (movieId, isFeatured = false) => {
         try {
@@ -142,6 +154,16 @@ function LandPage() {
         fetchMovies();
     }, [fetchMovies]);
 
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = () => {
+            if (isOpen) setIsOpen(false);
+        };
+        
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [isOpen]);
+
     if (showTrailerPage && selectedMovie && trailerUrl) {
         return <MovieDetails 
             movie={selectedMovie} 
@@ -149,6 +171,9 @@ function LandPage() {
             trailerKey={trailerUrl} 
         />;
     }
+
+    const isMobile = windowWidth < 768;
+    const isTablet = windowWidth >= 768 && windowWidth < 1024;
 
     return (
         <div className="landPage" style={{ backgroundColor: '#0f0f1a', minHeight: '100vh', color: 'white' }}>
@@ -185,8 +210,8 @@ function LandPage() {
                     </button>
                     <iframe
                         title="Movie Trailer"
-                        width="80%"
-                        height="80%"
+                        width={isMobile ? "95%" : "80%"}
+                        height={isMobile ? "40%" : "80%"}
                         src={`https://www.youtube.com/embed/${trailerUrl}?autoplay=1`}
                         frameBorder="0"
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -198,9 +223,10 @@ function LandPage() {
 
             <div style={{
                 display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row',
                 justifyContent: 'space-between',
-                alignItems: 'center',
-                padding: '15px 30px',
+                alignItems: isMobile ? 'flex-start' : 'center',
+                padding: isMobile ? '10px 15px' : '15px 30px',
                 backgroundColor: '#1a1a2e',
                 position: 'sticky',
                 top: 0,
@@ -208,19 +234,21 @@ function LandPage() {
                 boxShadow: '0 2px 10px rgba(0,0,0,0.3)'
             }}>
                 <div style={{ 
-                    fontSize: '1.8rem', 
+                    fontSize: isMobile ? '1.4rem' : '1.8rem', 
                     fontWeight: 'bold', 
                     color: '#e50914',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
-                    flex: 1
+                    flex: isMobile ? 'none' : 1,
+                    marginBottom: isMobile ? '10px' : 0,
+                    width: isMobile ? '100%' : 'auto',
                 }}>
                     <img 
                         src={logoCinescope} 
                         alt="CineScope Logo" 
                         style={{
-                            height: '40px',
+                            height: isMobile ? '30px' : '40px',
                             width: 'auto',
                             borderRadius: '4px'
                         }}
@@ -231,9 +259,11 @@ function LandPage() {
                 <div style={{ 
                     display: 'flex', 
                     justifyContent: 'center',
-                    flex: 1
+                    flex: isMobile ? 'none' : 1,
+                    width: isMobile ? '100%' : 'auto',
+                    marginBottom: isMobile ? '10px' : 0
                 }}>
-                    <div style={{ position: 'relative', width: '100%', maxWidth: '500px' }}>
+                    <div style={{ position: 'relative', width: '100%', maxWidth: isMobile ? '100%' : '500px' }}>
                         <input 
                             type="text" 
                             placeholder="Search movies..." 
@@ -266,26 +296,30 @@ function LandPage() {
                 <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
-                    gap: '15px',
-                    justifyContent: 'flex-end',
-                    flex: 1
+                    gap: '10px',
+                    justifyContent: isMobile ? 'space-between' : 'flex-end',
+                    flex: isMobile ? 'none' : 1,
+                    width: isMobile ? '100%' : 'auto'
                 }}>
                     <button 
                         style={{
                             backgroundColor: '#e50914',
                             color: 'white',
                             border: 'none',
-                            padding: '8px 20px',
+                            padding: isMobile ? '6px 15px' : '8px 20px',
                             borderRadius: '4px',
                             cursor: 'pointer',
                             fontWeight: 'bold',
-                            transition: 'all 0.3s ease'
+                            transition: 'all 0.3s ease',
+                            fontSize: isMobile ? '0.9rem' : 'inherit',
+                            flex: isMobile ? '1' : 'none'
                         }}
                         onClick={() => navigate('/login')}
                     >
                         Sign In
                     </button>
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', flex: isMobile ? '1' : 'none' }}>
+
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
@@ -295,13 +329,16 @@ function LandPage() {
                                 background: 'red',
                                 border: 'none',
                                 color: 'white',
-                                padding: '8px 20px',
+                                padding: isMobile ? '6px 15px' : '8px 20px',
                                 cursor: 'pointer',
                                 display: 'flex',
                                 fontWeight: 'bold',
-                                gap: '15px',
+                                gap: isMobile ? '5px' : '15px',
                                 alignItems: 'center',
                                 borderRadius: '4px',
+                                width: isMobile ? '100%' : 'auto',
+                                fontSize: isMobile ? '0.9rem' : 'inherit',
+                                justifyContent: 'center'
                             }}
                         >
                             Categories {isOpen ? <FontAwesomeIcon icon={faAngleUp} /> : <FontAwesomeIcon icon={faAngleDown} />}
@@ -313,7 +350,7 @@ function LandPage() {
                                 right: 0,
                                 backgroundColor: '#2c2c44',
                                 borderRadius: '4px',
-                                width: '180px',
+                                width: isMobile ? '100%' : '180px',
                                 boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
                                 zIndex: 1000,
                                 marginTop: '10px'
@@ -329,7 +366,8 @@ function LandPage() {
                                         }}
                                         onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3e3e5e'}
                                         onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                                        onClick={() => {
+                                        onClick={(e) => {
+                                            e.stopPropagation();
                                             const categoryMap = {
                                                 'Action': 'action',
                                                 'Comedy': 'comedy',
@@ -352,13 +390,14 @@ function LandPage() {
             </div>
 
             {featuredMovie && (
-                <div style={{ padding: '20px 30px' }}>
+                <div style={{ padding: isMobile ? '10px 15px' : '20px 30px' }}>
+
                     <section 
                         style={{
                             position: 'relative',
                             borderRadius: '8px',
                             margin: '20px 0',
-                            minHeight: '70vh',
+                            minHeight: isMobile ? '50vh' : '70vh',
                             display: 'flex',
                             alignItems: 'center',
                             overflow: 'hidden'
@@ -366,7 +405,7 @@ function LandPage() {
                         onMouseEnter={handleMouseEnter}
                         onMouseLeave={handleMouseLeave}
                     >
-                        {isHovering && featuredTrailerKey ? (
+                        {isHovering && featuredTrailerKey && !isMobile ? (
                             <div style={{
                                 position: 'absolute',
                                 width: '100%',
@@ -420,19 +459,23 @@ function LandPage() {
                         }}></div>
                         
                         <div style={{
-                            maxWidth: '600px',
-                            padding: '40px',
+                            maxWidth: isMobile ? '100%' : '600px',
+                            padding: isMobile ? '20px' : '40px',
                             position: 'relative',
                             zIndex: 3
                         }}>
-                            <h2 style={{ fontSize: '2.5rem', marginBottom: '10px' }}>
+                            <h2 style={{ 
+                                fontSize: isMobile ? '1.8rem' : '2.5rem', 
+                                marginBottom: '10px' 
+                            }}>
                                 {featuredMovie?.title || 'Featured Movie'}
                             </h2>
                             <div style={{ 
                                 display: 'flex', 
                                 justifyContent: 'space-between', 
                                 marginBottom: '20px',
-                                fontWeight: 'bold'
+                                fontWeight: 'bold',
+                                fontSize: isMobile ? '0.9rem' : 'inherit'
                             }}>
                                 <span>Rating: {featuredMovie?.vote_average?.toFixed(1) || 'N/A'}/10</span>
                                 <span>Released: {featuredMovie?.release_date?.split('-')[0] || 'N/A'}</span>
@@ -440,7 +483,12 @@ function LandPage() {
                             <p style={{ 
                                 lineHeight: '1.6', 
                                 marginBottom: '25px',
-                                fontSize: '1.1rem'
+                                fontSize: isMobile ? '1rem' : '1.1rem',
+                                display: '-webkit-box',
+                                WebkitLineClamp: isMobile ? '3' : 'unset',
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis'
                             }}>
                                 {featuredMovie?.overview || 'Movie description will appear here.'}
                             </p>
@@ -455,15 +503,16 @@ function LandPage() {
                                         backgroundColor: '#e50914',
                                         color: 'white',
                                         border: 'none',
-                                        padding: '12px 30px',
-                                        fontSize: '1rem',
+                                        padding: isMobile ? '10px 20px' : '12px 30px',
+                                        fontSize: isMobile ? '0.9rem' : '1rem',
                                         borderRadius: '4px',
                                         cursor: 'pointer',
                                         transition: 'background-color 0.3s',
                                         fontWeight: 'bold'
                                     }}
                                 >
-                                    VIEW TRAILER
+                                    VIEW 
+
                                 </button>
                                 {featuredMovieVideos.length > 0 && (
                                     <button 
@@ -472,8 +521,8 @@ function LandPage() {
                                             backgroundColor: 'rgba(255,255,255,0.1)',
                                             color: 'white',
                                             border: '2px solid #e50914',
-                                            padding: '12px 30px',
-                                            fontSize: '1rem',
+                                            padding: isMobile ? '10px 20px' : '12px 30px',
+                                            fontSize: isMobile ? '0.9rem' : '1rem',
                                             borderRadius: '4px',
                                             cursor: 'pointer',
                                             transition: 'background-color 0.3s',
@@ -489,13 +538,14 @@ function LandPage() {
                     
                     {showVideoGallery && featuredMovieVideos.length > 0 && (
                         <section style={{
-                            padding: '20px',
+                            padding: isMobile ? '15px' : '20px',
                             backgroundColor: 'rgba(26, 26, 46, 0.8)',
                             borderRadius: '8px',
                             marginBottom: '30px'
                         }}>
                             <h3 style={{ 
-                                fontSize: '1.3rem', 
+                                fontSize: isMobile ? '1.1rem' : '1.3rem', 
+
                                 marginBottom: '20px',
                                 borderBottom: '1px solid #333',
                                 paddingBottom: '10px'
@@ -505,8 +555,12 @@ function LandPage() {
                             
                             <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                                gap: '20px'
+                                gridTemplateColumns: isMobile 
+                                    ? 'repeat(auto-fill, minmax(140px, 1fr))' 
+                                    : isTablet
+                                        ? 'repeat(auto-fill, minmax(200px, 1fr))'
+                                        : 'repeat(auto-fill, minmax(250px, 1fr))',
+                                gap: isMobile ? '10px' : '20px'
                             }}>
                                 {featuredMovieVideos.map(video => (
                                     <div 
@@ -542,12 +596,12 @@ function LandPage() {
                                                 transform: 'translate(-50%, -50%)',
                                                 backgroundColor: 'rgba(229, 9, 20, 0.8)',
                                                 borderRadius: '50%',
-                                                width: '50px',
-                                                height: '50px',
+                                                width: isMobile ? '40px' : '50px',
+                                                height: isMobile ? '40px' : '50px',
                                                 display: 'flex',
                                                 justifyContent: 'center',
                                                 alignItems: 'center',
-                                                fontSize: '1.5rem'
+                                                fontSize: isMobile ? '1.2rem' : '1.5rem'
                                             }}>
                                                 ▶
                                             </div>
@@ -558,13 +612,14 @@ function LandPage() {
                                                 fontWeight: 'bold',
                                                 whiteSpace: 'nowrap',
                                                 overflow: 'hidden',
-                                                textOverflow: 'ellipsis'
+                                                textOverflow: 'ellipsis',
+                                                fontSize: isMobile ? '0.8rem' : 'inherit'
                                             }}>
                                                 {video.name}
                                             </p>
                                             <p style={{
                                                 margin: '5px 0 0',
-                                                fontSize: '0.8rem',
+                                                fontSize: isMobile ? '0.7rem' : '0.8rem',
                                                 color: '#aaa'
                                             }}>
                                                 {video.type}
@@ -578,15 +633,20 @@ function LandPage() {
                 </div>
             )}
 
-            <div style={{ padding: '20px 30px' }}>
+            <div style={{ padding: isMobile ? '10px 15px' : '20px 30px' }}>
                 <section>
                     <div style={{ 
                         display: 'flex', 
                         justifyContent: 'space-between', 
                         alignItems: 'center',
-                        margin: '30px 0 20px 0'
+                        margin: '30px 0 20px 0',
+                        flexWrap: isMobile ? 'wrap' : 'nowrap'
                     }}>
-                        <h3 style={{ fontSize: '1.5rem' }}>
+                        <h3 style={{ 
+                            fontSize: isMobile ? '1.2rem' : '1.5rem',
+                            marginBottom: isMobile ? '10px' : 0,
+                            width: isMobile ? '100%' : 'auto'  
+                        }}>
                             {searchQuery ? `Search Results for "${searchQuery}"` : 'Featured Movies'}
                         </h3>
                         {!searchQuery && (
@@ -603,8 +663,9 @@ function LandPage() {
                                     gap: '5px',
                                     cursor: page >= totalPages ? 'default' : 'pointer',
                                     padding: 0,
-                                    fontSize: 'inherit',
-                                    opacity: page >= totalPages ? 0.7 : 1
+                                    fontSize: isMobile ? '0.9rem' : 'inherit',
+                                    opacity: page >= totalPages ? 0.7 : 1,
+                                    marginLeft: isMobile ? 'auto' : 0
                                 }}
                             >
                                 {loading ? 'Loading...' : 'See more'} <span style={{ fontSize: '1.2rem' }}>→</span>
@@ -614,8 +675,12 @@ function LandPage() {
                     
                     <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                        gap: '25px',
+                        gridTemplateColumns: isMobile 
+                            ? 'repeat(auto-fill, minmax(120px, 1fr))' 
+                            : isTablet
+                                ? 'repeat(auto-fill, minmax(150px, 1fr))'
+                                : 'repeat(auto-fill, minmax(180px, 1fr))',
+                        gap: isMobile ? '15px' : '25px',
                         padding: '10px 0'
                     }}>
                         {filteredMovies.length > 0 ? (
@@ -640,16 +705,16 @@ function LandPage() {
                                         alt={movie.title}
                                         style={{
                                             width: '100%',
-                                            height: '270px',
+                                            height: isMobile ? '180px' : isTablet ? '225px' : '270px',
                                             objectFit: 'cover',
                                             borderRadius: '8px',
                                             border: '1px solid #333'
                                         }}
                                     />
-                                    <div style={{ padding: '12px 5px' }}>
+                                    <div style={{ padding: isMobile ? '8px 3px' : '12px 5px' }}>
                                         <h4 style={{ 
                                             margin: '0 0 5px 0', 
-                                            fontSize: '0.95rem',
+                                            fontSize: isMobile ? '0.85rem' : '0.95rem',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
                                             textOverflow: 'ellipsis'
@@ -659,7 +724,7 @@ function LandPage() {
                                         <div style={{ 
                                             display: 'flex', 
                                             justifyContent: 'space-between',
-                                            fontSize: '0.85rem'
+                                            fontSize: isMobile ? '0.75rem' : '0.85rem'
                                         }}>
                                             <span style={{ color: '#aaa' }}>
                                                 {movie.release_date?.split('-')[0] || 'N/A'}
@@ -678,11 +743,10 @@ function LandPage() {
                             <div style={{ 
                                 gridColumn: '1 / -1',
                                 textAlign: 'center',
-                                padding: '40px',
+                                padding: isMobile ? '20px' : '40px',
                                 color: '#aaa'
                             }}>
-                                {searchQuery ? 
-                                    `No movies found matching "${searchQuery}"` : 
+                                {searchQuery ? `No movies found matching "${searchQuery}"` : 
                                     'No movies available'
                                 }
                             </div>
@@ -693,7 +757,7 @@ function LandPage() {
                         <div style={{ 
                             color: 'white', 
                             textAlign: 'center', 
-                            padding: '20px',
+                            padding: isMobile ? '15px' : '20px',
                             fontStyle: 'italic'
                         }}>
                             Loading more movies...

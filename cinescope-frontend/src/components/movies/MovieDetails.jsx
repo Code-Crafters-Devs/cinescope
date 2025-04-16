@@ -9,6 +9,21 @@ function MovieDetails({ movie, onBack, trailerKey }) {
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState('overview');
     const [showTrailer, setShowTrailer] = useState(false);
+    const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+    
+    // Handle window resize events to update mobile state
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth <= 768);
+            // Close trailer automatically on small screens when resizing
+            if (window.innerWidth <= 768 && showTrailer) {
+                setShowTrailer(false);
+            }
+        };
+        
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [showTrailer]);
     
     useEffect(() => {
         const fetchMovieDetails = async () => {
@@ -65,7 +80,8 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                fontSize: '1.5rem'
+                fontSize: '1.5rem',
+                padding: '20px'
             }}>
                 Loading movie details...
             </div>
@@ -90,14 +106,14 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                         ) : (
                             <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                                gap: '20px'
+                                gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? '100px' : '150px'}, 1fr))`,
+                                gap: isMobile ? '15px' : '20px'
                             }}>
                                 {cast.map(person => (
                                     <div key={person.id} style={{ textAlign: 'center' }}>
                                         <div style={{
-                                            width: '120px',
-                                            height: '120px',
+                                            width: isMobile ? '80px' : '120px',
+                                            height: isMobile ? '80px' : '120px',
                                             borderRadius: '50%',
                                             overflow: 'hidden',
                                             margin: '0 auto 10px auto',
@@ -115,8 +131,25 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                                                 }}
                                             />
                                         </div>
-                                        <h4 style={{ margin: '0 0 5px 0', fontSize: '1rem' }}>{person.name}</h4>
-                                        <p style={{ margin: 0, fontSize: '0.9rem', color: '#aaa' }}>{person.character}</p>
+                                        <h4 style={{ 
+                                            margin: '0 0 5px 0', 
+                                            fontSize: isMobile ? '0.85rem' : '1rem',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
+                                        }}>
+                                            {person.name}
+                                        </h4>
+                                        <p style={{ 
+                                            margin: 0, 
+                                            fontSize: isMobile ? '0.75rem' : '0.9rem', 
+                                            color: '#aaa',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
+                                        }}>
+                                            {person.character}
+                                        </p>
                                     </div>
                                 ))}
                             </div>
@@ -131,8 +164,8 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                         ) : (
                             <div style={{
                                 display: 'grid',
-                                gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                                gap: '25px'
+                                gridTemplateColumns: `repeat(auto-fill, minmax(${isMobile ? '120px' : '180px'}, 1fr))`,
+                                gap: isMobile ? '15px' : '25px'
                             }}>
                                 {relatedMovies.map(relatedMovie => (
                                     <div 
@@ -151,7 +184,7 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                                             alt={relatedMovie.title}
                                             style={{
                                                 width: '100%',
-                                                height: '270px',
+                                                height: isMobile ? '180px' : '270px',
                                                 objectFit: 'cover',
                                                 borderRadius: '8px',
                                                 border: '1px solid #333'
@@ -160,7 +193,7 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                                         <div style={{ padding: '12px 5px' }}>
                                             <h4 style={{ 
                                                 margin: '0 0 5px 0', 
-                                                fontSize: '0.95rem',
+                                                fontSize: isMobile ? '0.85rem' : '0.95rem',
                                                 whiteSpace: 'nowrap',
                                                 overflow: 'hidden',
                                                 textOverflow: 'ellipsis'
@@ -170,7 +203,7 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                                             <div style={{ 
                                                 display: 'flex', 
                                                 justifyContent: 'space-between',
-                                                fontSize: '0.85rem'
+                                                fontSize: isMobile ? '0.75rem' : '0.85rem'
                                             }}>
                                                 <span style={{ color: '#aaa' }}>
                                                     {relatedMovie.release_date?.split('-')[0] || 'N/A'}
@@ -204,10 +237,11 @@ function MovieDetails({ movie, onBack, trailerKey }) {
             {/* Hero Section with Movie Background */}
             <div style={{
                 position: 'relative',
-                height: '70vh',
+                height: isMobile ? '50vh' : '70vh',
                 width: '100%',
                 overflow: 'hidden',
-                display: 'flex'
+                display: 'flex',
+                flexDirection: isMobile ? 'column' : 'row'
             }}>
                 {/* Background Image */}
                 <div style={{
@@ -245,53 +279,70 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                     <FontAwesomeIcon icon={faArrowLeft} />
                 </button>
                 
-                {/* Movie Info Section - now sharing row with trailer */}
+                {/* Movie Info Section */}
                 <div style={{
                     position: 'relative',
                     zIndex: 2,
-                    width: showTrailer ? '60%' : '100%',
-                    padding: '40px',
+                    width: isMobile || !showTrailer ? '100%' : '60%',
+                    padding: isMobile ? '20px' : '40px',
                     display: 'flex',
                     flexDirection: 'column',
                     justifyContent: 'flex-end',
                     transition: 'width 0.3s ease'
                 }}>
                     <div style={{ maxWidth: '800px' }}>
-                        <h1 style={{ fontSize: '3rem', marginBottom: '10px' }}>{movie.title}</h1>
+                        <h1 style={{ 
+                            fontSize: isMobile ? '1.8rem' : '3rem', 
+                            marginBottom: '10px',
+                            wordBreak: 'break-word'
+                        }}>
+                            {movie.title}
+                        </h1>
                         
                         <div style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
-                            gap: '20px',
-                            marginBottom: '20px'
+                            gap: isMobile ? '10px' : '20px',
+                            marginBottom: '20px',
+                            flexWrap: 'wrap'
                         }}>
                             <span style={{ 
                                 backgroundColor: '#e50914',
                                 padding: '5px 12px',
                                 borderRadius: '4px',
-                                fontWeight: 'bold'
+                                fontWeight: 'bold',
+                                fontSize: isMobile ? '0.85rem' : 'inherit'
                             }}>
                                 <FontAwesomeIcon icon={faStar} style={{ marginRight: '5px', color: '#FFD700' }} />
                                 {movie.vote_average?.toFixed(1) || 'N/A'}/10
                             </span>
                             
-                            <span>{movie.release_date?.split('-')[0] || 'N/A'}</span>
+                            <span style={{ fontSize: isMobile ? '0.85rem' : 'inherit' }}>
+                                {movie.release_date?.split('-')[0] || 'N/A'}
+                            </span>
                             
                             {movieDetails && movieDetails.runtime && (
-                                <span>{Math.floor(movieDetails.runtime / 60)}h {movieDetails.runtime % 60}m</span>
+                                <span style={{ fontSize: isMobile ? '0.85rem' : 'inherit' }}>
+                                    {Math.floor(movieDetails.runtime / 60)}h {movieDetails.runtime % 60}m
+                                </span>
                             )}
                         </div>
                         
                         {/* Genres */}
-                        <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            gap: '10px', 
+                            marginBottom: '20px', 
+                            flexWrap: 'wrap'
+                        }}>
                             {movieDetails && movieDetails.genres && movieDetails.genres.map(genre => (
                                 <span 
                                     key={genre.id}
                                     style={{
                                         border: '1px solid white',
-                                        padding: '5px 12px',
+                                        padding: isMobile ? '3px 8px' : '5px 12px',
                                         borderRadius: '20px',
-                                        fontSize: '0.9rem'
+                                        fontSize: isMobile ? '0.8rem' : '0.9rem'
                                     }}
                                 >
                                     {genre.name}
@@ -300,20 +351,27 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                         </div>
                         
                         {/* Watch & Download Buttons */}
-                        <div style={{ display: 'flex', gap: '15px' }}>
+                        <div style={{ 
+                            display: 'flex', 
+                            gap: '15px',
+                            flexWrap: isMobile ? 'wrap' : 'nowrap'
+                        }}>
                             <button 
                                 onClick={toggleTrailer}
                                 style={{
                                     backgroundColor: '#e50914',
                                     color: 'white',
                                     border: 'none',
-                                    padding: '12px 24px',
+                                    padding: isMobile ? '10px 16px' : '12px 24px',
                                     borderRadius: '4px',
                                     fontWeight: 'bold',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '8px',
-                                    cursor: 'pointer'
+                                    cursor: 'pointer',
+                                    fontSize: isMobile ? '0.9rem' : 'inherit',
+                                    width: isMobile ? '100%' : 'auto',
+                                    justifyContent: isMobile ? 'center' : 'flex-start'
                                 }}
                             >
                                 <FontAwesomeIcon icon={faPlay} /> Watch Trailer
@@ -325,13 +383,16 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                                     backgroundColor: 'transparent',
                                     color: 'white',
                                     border: '2px solid white',
-                                    padding: '12px 24px',
+                                    padding: isMobile ? '10px 16px' : '12px 24px',
                                     borderRadius: '4px',
                                     fontWeight: 'bold',
                                     display: 'flex',
                                     alignItems: 'center',
                                     gap: '8px',
-                                    cursor: 'pointer'
+                                    cursor: 'pointer',
+                                    fontSize: isMobile ? '0.9rem' : 'inherit',
+                                    width: isMobile ? '100%' : 'auto',
+                                    justifyContent: isMobile ? 'center' : 'flex-start'
                                 }}
                             >
                                 <FontAwesomeIcon icon={faDownload} /> Download
@@ -340,16 +401,22 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                     </div>
                 </div>
 
-                {/* Trailer Section - now positioned opposite the movie details */}
+                {/* Trailer Section - only shown on non-mobile or when explicitly toggled */}
                 {showTrailer && (
                     <div style={{
-                        width: '40%',
-                        position: 'relative',
-                        zIndex: 2,
-                        padding: '40px',
+                        width: isMobile ? '100%' : '40%',
+                        position: isMobile ? 'fixed' : 'relative',
+                        top: isMobile ? 0 : 'auto',
+                        left: isMobile ? 0 : 'auto',
+                        right: isMobile ? 0 : 'auto',
+                        bottom: isMobile ? 0 : 'auto',
+                        height: isMobile ? '100%' : 'auto',
+                        zIndex: isMobile ? 1000 : 2,
+                        padding: isMobile ? '20px' : '40px',
                         display: 'flex',
                         flexDirection: 'column',
-                        justifyContent: 'center'
+                        justifyContent: 'center',
+                        backgroundColor: isMobile ? 'rgba(0, 0, 0, 0.95)' : 'transparent'
                     }}>
                         <div style={{
                             position: 'relative',
@@ -378,7 +445,7 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                         <button
                             onClick={toggleTrailer}
                             style={{
-                                alignSelf: 'flex-end',
+                                alignSelf: isMobile ? 'center' : 'flex-end',
                                 marginTop: '15px',
                                 background: 'rgba(255,255,255,0.1)',
                                 color: 'white',
@@ -388,7 +455,8 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                fontSize: isMobile ? '0.9rem' : 'inherit'
                             }}
                         >
                             <FontAwesomeIcon icon={faTimes} /> Close Trailer
@@ -397,23 +465,25 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                 )}
             </div>
             
-            {/* Content Container - now below both movie details and trailer */}
+            {/* Content Container */}
             <div style={{ 
                 maxWidth: '1200px', 
                 margin: '0 auto',
-                padding: '0 40px'
+                padding: isMobile ? '0 20px' : '0 40px'
             }}>
                 {/* Horizontal Navbar */}
                 <div style={{ 
                     display: 'flex',
                     borderBottom: '1px solid #333',
-                    margin: '20px 0 0 0'
+                    margin: '20px 0 0 0',
+                    overflowX: 'auto',
+                    whiteSpace: 'nowrap'
                 }}>
                     <button 
                         onClick={() => setActiveTab('overview')}
                         style={{
-                            padding: '15px 30px',
-                            fontSize: '1.2rem',
+                            padding: isMobile ? '10px 15px' : '15px 30px',
+                            fontSize: isMobile ? '1rem' : '1.2rem',
                             backgroundColor: 'transparent',
                             color: activeTab === 'overview' ? '#e50914' : 'white',
                             border: 'none',
@@ -429,8 +499,8 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                     <button 
                         onClick={() => setActiveTab('cast')}
                         style={{
-                            padding: '15px 30px',
-                            fontSize: '1.2rem',
+                            padding: isMobile ? '10px 15px' : '15px 30px',
+                            fontSize: isMobile ? '1rem' : '1.2rem',
                             backgroundColor: 'transparent',
                             color: activeTab === 'cast' ? '#e50914' : 'white',
                             border: 'none',
@@ -446,8 +516,8 @@ function MovieDetails({ movie, onBack, trailerKey }) {
                     <button 
                         onClick={() => setActiveTab('related')}
                         style={{
-                            padding: '15px 30px',
-                            fontSize: '1.2rem',
+                            padding: isMobile ? '10px 15px' : '15px 30px',
+                            fontSize: isMobile ? '1rem' : '1.2rem',
                             backgroundColor: 'transparent',
                             color: activeTab === 'related' ? '#e50914' : 'white',
                             border: 'none',

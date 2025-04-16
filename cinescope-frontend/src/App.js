@@ -9,6 +9,13 @@ import RomanceMovies from './components/categories/romance.jsx';
 import LoginForm from './components/auth/LoginForm.jsx';
 import SignupForm from './components/auth/SignupForm.jsx';
 import UserHome from './pages/userHome.jsx';
+
+import UserActionMovies from './components/categories/userAction.jsx';
+import UserComedyMovies from './components/categories/userComedy.jsx';
+import UserAnimationMovies from './components/categories/userAnime.jsx';
+import UserHorrorMovies from './components/categories/userHorror.jsx';
+import UserRomanceMovies from './components/categories/userRomance.jsx';
+
 const ProtectedRoute = ({ children }) => {
   const token = localStorage.getItem('token');
   if (!token) {
@@ -31,11 +38,37 @@ function App() {
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<SignupForm />} />
           <Route path="/userHome" element={
-          <ProtectedRoute>
-            <UserHome />
-          </ProtectedRoute>
-        } />
-  
+
+            <ProtectedRoute>
+              <UserHome />
+            </ProtectedRoute>
+          } />
+          <Route path="/user/categories/action" element={
+            <ProtectedRoute>
+              <UserActionMovies />
+            </ProtectedRoute>
+          } />
+          <Route path="/user/categories/comedy" element={
+            <ProtectedRoute>
+              <UserComedyMovies />
+            </ProtectedRoute>
+          } />
+          <Route path="/user/categories/animation" element={
+            <ProtectedRoute>
+              <UserAnimationMovies />
+            </ProtectedRoute>
+          } />
+          <Route path="/user/categories/horror" element={
+            <ProtectedRoute>
+              <UserHorrorMovies />
+            </ProtectedRoute>
+          } />
+          <Route path="/user/categories/romance" element={
+            <ProtectedRoute>
+              <UserRomanceMovies />
+            </ProtectedRoute>
+          } />
+            
         </Routes>
       </div>
     </Router>
