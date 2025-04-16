@@ -304,7 +304,7 @@ function UserHome() {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setUserData(null);
-        navigate('/login');
+        navigate('/');
     };
 
     const toggleDropdown = () => {
