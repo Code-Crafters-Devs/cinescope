@@ -17,7 +17,7 @@ CineScope is a modern movie streaming platform designed to provide users with a 
 
 ## 🚀 Deployment
 
-**Live Demo:** [CineScope Platform](https://cinescope.example.com)
+**Live Demo:** [CineScope Platform](https://cinescope01.netlify.app/)
 
 ---
 
