@@ -2,7 +2,7 @@
 
 CineScope is a modern movie streaming platform designed to provide users with a seamless experience for discovering, watching, and sharing movies. Built with cutting-edge technologies, CineScope integrates AI-powered recommendations, social watch parties, and adaptive streaming to deliver a premium movie streaming experience.
 
-![CineScope Landing Page](cinescope-frontend\src/components/pictures/Landing_Page.jpg)
+![CineScope Landing Page](cinescope-frontend/src/components/pictures/Landing_Page.jpg)
 
 ![CineScope User's Account Page](cinescope-frontend/src/components/pictures/User.png)
 
