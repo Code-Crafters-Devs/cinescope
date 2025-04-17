@@ -2,7 +2,9 @@
 
 CineScope is a modern movie streaming platform designed to provide users with a seamless experience for discovering, watching, and sharing movies. Built with cutting-edge technologies, CineScope integrates AI-powered recommendations, social watch parties, and adaptive streaming to deliver a premium movie streaming experience.
 
-![CineScope Landing Page](./public/images/Landing_Page.jpg)
+![CineScope Landing Page](cinescope-frontend\src/components/pictures/Landing_Page.jpg)
+
+![CineScope User's Account Page](cinescope-frontend/src/components/pictures/User.png)
 
 ---
 
@@ -17,7 +19,7 @@ CineScope is a modern movie streaming platform designed to provide users with a 
 
 ## 🚀 Deployment
 
-**Live Demo:** [CineScope Platform](https://cinescope1.netlify.app/)
+**Live Demo:** [CineScope Platform](https://cinescope-q79y.onrender.com/)
 
 ---
 
@@ -86,7 +88,7 @@ CineScope is a modern movie streaming platform designed to provide users with a 
 
 | Name          | Role                     |
 |---------------|--------------------------|
-| **Khulekani** | Frontend Lead            |
+| **Khulekani mtshali** | Frontend Lead            |
 | **Matimu**    | Backend Lead, DevOps     |
 | **Luyanda**   | Database Architect       |
 | **Arise Dzamukeri**     | QA Lead, UI/UX Designer  |
