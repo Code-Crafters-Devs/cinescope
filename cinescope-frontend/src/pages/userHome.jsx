@@ -156,11 +156,7 @@ function UserHome() {
                     );
 
                     const data = await response.json();
-                    const filteredResults = data.results.filter(movie =>
-                        !movie.title.toLowerCase().includes('minecraft')
-                    );
-
-                    setPopularInCountry(filteredResults.slice(0, 12));
+                    setPopularInCountry(data.results.slice(0, 12));
                 } catch (error) {
                     console.error("Error fetching popular movies for country:", error);
                     setError('Failed to load popular movies for your country');
@@ -203,12 +199,8 @@ function UserHome() {
             const data = await response.json();
             setTotalPages(data.total_pages);
             
-            const filteredResults = data.results.filter(movie => 
-                !movie.title.toLowerCase().includes('minecraft')
-            );
-            
             if (page === 1) {
-                const moviesToShow = filteredResults.slice(0, 12);
+                const moviesToShow = data.results.slice(0, 12);
                 setMovies(moviesToShow);
                 setFilteredMovies(moviesToShow);
                 
@@ -218,8 +210,8 @@ function UserHome() {
                     fetchMovieVideos(firstMovie.id, true);
                 }
             } else {
-                setMovies(prev => [...prev, ...filteredResults.slice(0, 12)]);
-                setFilteredMovies(prev => [...prev, ...filteredResults.slice(0, 12)]);
+                setMovies(prev => [...prev, ...data.results.slice(0, 12)]);
+                setFilteredMovies(prev => [...prev, ...data.results.slice(0, 12)]);
             }
             setLoading(false);
         } catch (error) {
@@ -459,17 +451,28 @@ function UserHome() {
     };
 
     const updateFeaturedMovie = (movie) => {
-        if (!movie.title.toLowerCase().includes('minecraft')) {
+        if (movie && movie.title) {
             setFeaturedMovie(movie);
             fetchMovieVideos(movie.id, true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     };
     
-
     useEffect(() => {
         fetchMovies();
     }, [fetchMovies]);
+
+    // Update filtered movies when movies or search query changes
+    useEffect(() => {
+        if (searchQuery.trim() === '') {
+            setFilteredMovies(movies);
+        } else {
+            const filtered = movies.filter(movie =>
+                movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredMovies(filtered);
+        }
+    }, [searchQuery, movies]);
 
     if (showTrailerPage && selectedMovie && trailerUrl) {
         return <MovieDetails 
@@ -512,11 +515,15 @@ function UserHome() {
             <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-                gap: '15px',
+                gap: '20px',
                 padding: '10px 0',
-                '@media (min-width: 768px)': {
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-                    gap: '25px'
+                '@media (max-width: 768px)': {
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                    gap: '15px'
+                },
+                '@media (max-width: 480px)': {
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                    gap: '10px'
                 }
             }}>
                 {movies.map((movie) => (
@@ -564,9 +571,9 @@ function UserHome() {
                                     alignItems: 'center',
                                     cursor: 'pointer',
                                     zIndex: 2,
-                                    '@media (min-width: 768px)': {
-                                        width: '36px',
-                                        height: '36px'
+                                    '@media (max-width: 480px)': {
+                                        width: '25px',
+                                        height: '25px'
                                     }
                                 }}
                                 onClick={(e) => {
@@ -576,8 +583,8 @@ function UserHome() {
                             >
                                 {isFavoriteLoading[movie.id] ? (
                                     <div style={{
-                                        width: '16px',
-                                        height: '16px',
+                                        width: '14px',
+                                        height: '14px',
                                         border: '2px solid #fff',
                                         borderTop: '2px solid transparent',
                                         borderRadius: '50%',
@@ -587,7 +594,10 @@ function UserHome() {
                                     <FontAwesomeIcon 
                                         icon={isFavorite(movie.id) ? faSolidHeart : faHeart} 
                                         color={isFavorite(movie.id) ? '#e50914' : 'white'}
-                                        style={{ transition: 'color 0.2s ease' }}
+                                        style={{ 
+                                            transition: 'color 0.2s ease',
+                                            fontSize: '14px'
+                                        }}
                                     />
                                 )}
                             </div>
@@ -605,9 +615,10 @@ function UserHome() {
                                     alignItems: 'center',
                                     cursor: 'pointer',
                                     zIndex: 2,
-                                    '@media (min-width: 768px)': {
-                                        width: '36px',
-                                        height: '36px'
+                                    '@media (max-width: 480px)': {
+                                        width: '25px',
+                                        height: '25px',
+                                        top: '45px'
                                     }
                                 }}
                                 onClick={(e) => {
@@ -617,8 +628,8 @@ function UserHome() {
                             >
                                 {isWatchingLoading[movie.id] ? (
                                     <div style={{
-                                        width: '16px',
-                                        height: '16px',
+                                        width: '14px',
+                                        height: '14px',
                                         border: '2px solid #fff',
                                         borderTop: '2px solid transparent',
                                         borderRadius: '50%',
@@ -628,7 +639,10 @@ function UserHome() {
                                     <FontAwesomeIcon 
                                         icon={faPlayCircle} 
                                         color={isCurrentlyWatching(movie.id) ? '#e50914' : 'white'}
-                                        style={{ transition: 'color 0.2s ease' }}
+                                        style={{ 
+                                            transition: 'color 0.2s ease',
+                                            fontSize: '14px'
+                                        }}
                                     />
                                 )}
                             </div>
@@ -640,8 +654,8 @@ function UserHome() {
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textOverflow: 'ellipsis',
-                                '@media (min-width: 768px)': {
-                                    fontSize: '0.95rem'
+                                '@media (max-width: 480px)': {
+                                    fontSize: '0.8rem'
                                 }
                             }}>
                                 {movie.title}
@@ -650,8 +664,8 @@ function UserHome() {
                                 display: 'flex', 
                                 justifyContent: 'space-between',
                                 fontSize: '0.8rem',
-                                '@media (min-width: 768px)': {
-                                    fontSize: '0.85rem'
+                                '@media (max-width: 480px)': {
+                                    fontSize: '0.7rem'
                                 }
                             }}>
                                 <span style={{ color: '#aaa' }}>
@@ -682,8 +696,11 @@ function UserHome() {
                 overflowX: 'auto',
                 scrollbarWidth: 'none',
                 msOverflowStyle: 'none',
-                '@media (min-width: 768px)': {
-                    gap: '25px'
+                '&::-webkit-scrollbar': {
+                    display: 'none'
+                },
+                '@media (max-width: 768px)': {
+                    gap: '10px'
                 }
             }}>
                 {['Featured Movies', 'Popular in Your Country', 'Recently Watched', 'Currently Watching', 'Your Favorites'].map((section) => (
@@ -694,15 +711,17 @@ function UserHome() {
                             background: 'none',
                             border: 'none',
                             color: activeSection === section ? '#e50914' : 'white',
-                            fontSize: '0.9rem',
+                            fontSize: '1rem',
                             fontWeight: activeSection === section ? 'bold' : 'normal',
                             padding: '8px 0',
                             cursor: 'pointer',
                             whiteSpace: 'nowrap',
                             position: 'relative',
                             transition: 'color 0.3s ease',
-                            '@media (min-width: 768px)': {
-                                fontSize: '1.1rem'
+                            flexShrink: 0,
+                            '@media (max-width: 768px)': {
+                                fontSize: '0.9rem',
+                                padding: '8px 5px'
                             }
                         }}
                     >
@@ -731,7 +750,6 @@ function UserHome() {
                     position: 'fixed',
                     top: '20px',
                     right: '20px',
-                    left: '20px',
                     backgroundColor: '#e50914',
                     color: 'white',
                     padding: '15px',
@@ -739,14 +757,16 @@ function UserHome() {
                     zIndex: 3000,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    '@media (min-width: 768px)': {
-                        left: 'auto',
-                        right: '20px',
-                        maxWidth: '400px'
+                    gap: '10px',
+                    maxWidth: '90%',
+                    '@media (max-width: 768px)': {
+                        top: '10px',
+                        right: '10px',
+                        left: '10px',
+                        maxWidth: 'calc(100% - 20px)'
                     }
                 }}>
-                    <span>{error}</span>
+                    <span style={{ flex: 1 }}>{error}</span>
                     <button 
                         onClick={() => setError(null)}
                         style={{
@@ -754,7 +774,8 @@ function UserHome() {
                             border: 'none',
                             color: 'white',
                             cursor: 'pointer',
-                            fontSize: '1.2rem'
+                            fontSize: '1.2rem',
+                            flexShrink: 0
                         }}
                     >
                         ×
@@ -788,49 +809,48 @@ function UserHome() {
                             borderRadius: '50%',
                             cursor: 'pointer',
                             fontSize: '1.2rem',
-                            zIndex: 2001
+                            zIndex: 2001,
+                            '@media (max-width: 768px)': {
+                                top: '10px',
+                                right: '10px'
+                            }
                         }}
                     >
                         ×
                     </button>
-                    <div style={{
-                        width: '100%',
-                        height: '100%',
-                        padding: '20px',
-                        '@media (min-width: 768px)': {
-                            width: '80%',
-                            height: '80%'
-                        }
-                    }}>
-                        <iframe
-                            title="Movie Trailer"
-                            width="100%"
-                            height="100%"
-                            src={`https://www.youtube.com/embed/${trailerUrl}?autoplay=1`}
-                            frameBorder="0"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            style={{ zIndex: 2000 }}
-                        ></iframe>
-                    </div>
+                    <iframe
+                        title="Movie Trailer"
+                        width="90%"
+                        height="90%"
+                        style={{ 
+                            zIndex: 2000,
+                            '@media (max-width: 768px)': {
+                                width: '100%',
+                                height: '60%'
+                            }
+                        }}
+                        src={`https://www.youtube.com/embed/${trailerUrl}?autoplay=1`}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                    ></iframe>
                 </div>
             )}
 
             <div style={{
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '15px',
-                padding: '15px',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '15px 20px',
                 backgroundColor: '#1a1a2e',
                 position: 'sticky',
                 top: 0,
                 zIndex: 100,
                 boxShadow: '0 2px 10px rgba(0,0,0,0.3)',
-                '@media (min-width: 768px)': {
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '15px 30px'
+                '@media (max-width: 768px)': {
+                    flexDirection: 'column',
+                    padding: '10px',
+                    gap: '10px'
                 }
             }}>
                 <div style={{ 
@@ -840,9 +860,12 @@ function UserHome() {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '10px',
-                    '@media (min-width: 768px)': {
-                        fontSize: '1.8rem',
-                        flex: 1
+                    flex: 1,
+                    '@media (max-width: 768px)': {
+                        fontSize: '1.3rem',
+                        justifyContent: 'center',
+                        flex: 'none',
+                        width: '100%'
                     }
                 }}>
                     <span>CineScope</span>
@@ -851,8 +874,10 @@ function UserHome() {
                 <div style={{ 
                     display: 'flex', 
                     justifyContent: 'center',
-                    '@media (min-width: 768px)': {
-                        flex: 1
+                    flex: 1,
+                    '@media (max-width: 768px)': {
+                        width: '100%',
+                        flex: 'none'
                     }
                 }}>
                     <div style={{ position: 'relative', width: '100%', maxWidth: '500px' }}>
@@ -888,11 +913,13 @@ function UserHome() {
                 <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
-                    gap: '10px',
+                    gap: '15px',
                     justifyContent: 'flex-end',
-                    '@media (min-width: 768px)': {
-                        gap: '15px',
-                        flex: 1
+                    flex: 1,
+                    '@media (max-width: 768px)': {
+                        justifyContent: 'center',
+                        flex: 'none',
+                        width: '100%'
                     }
                 }}>
                     <div style={{ position: 'relative' }}>
@@ -904,15 +931,14 @@ function UserHome() {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: '8px',
-                                '@media (min-width: 768px)': {
-                                    fontSize: '1.5rem',
-                                    gap: '10px'
+                                '@media (max-width: 480px)': {
+                                    fontSize: '1rem'
                                 }
                             }}
                             onClick={() => setShowProfileDropdown(!showProfileDropdown)}
                         >
                             <FontAwesomeIcon icon={faUserCircle} />
-                            <span style={{ fontSize: '0.9rem', '@media (min-width: 768px)': { fontSize: '1rem' } }}>
+                            <span style={{ fontSize: '0.9rem', '@media (max-width: 480px)': { display: 'none' } }}>
                                 Welcome, {userData?.firstName || 'User'}
                             </span>
                         </div>
@@ -957,7 +983,8 @@ function UserHome() {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                gap: '8px'
+                                                gap: '8px',
+                                                fontSize: '0.9rem'
                                             }}
                                         >
                                             <FontAwesomeIcon icon={faEdit} />
@@ -977,7 +1004,8 @@ function UserHome() {
                                                 display: 'flex',
                                                 alignItems: 'center',
                                                 justifyContent: 'center',
-                                                gap: '8px'
+                                                gap: '8px',
+                                                fontSize: '0.9rem'
                                             }}
                                         >
                                             <FontAwesomeIcon icon={faSignOutAlt} />
@@ -986,7 +1014,7 @@ function UserHome() {
                                     </>
                                 ) : (
                                     <div style={{ padding: '8px' }}>
-                                        <h4 style={{ margin: '0 0 10px', textAlign: 'center' }}>Update Profile</h4>
+                                        <h4 style={{ margin: '0 0 10px', textAlign: 'center', fontSize: '1rem' }}>Update Profile</h4>
                                         <div style={{ marginBottom: '10px' }}>
                                             <label style={{ display: 'block', marginBottom: '5px', fontSize: '0.8rem' }}>First Name</label>
                                             <input
@@ -999,7 +1027,8 @@ function UserHome() {
                                                     borderRadius: '4px',
                                                     border: '1px solid #333',
                                                     backgroundColor: '#2c2c44',
-                                                    color: '#fff'
+                                                    color: '#fff',
+                                                    fontSize: '0.9rem'
                                                 }}
                                             />
                                         </div>
@@ -1015,7 +1044,8 @@ function UserHome() {
                                                     borderRadius: '4px',
                                                     border: '1px solid #333',
                                                     backgroundColor: '#2c2c44',
-                                                    color: '#fff'
+                                                    color: '#fff',
+                                                    fontSize: '0.9rem'
                                                 }}
                                             />
                                         </div>
@@ -1030,7 +1060,8 @@ function UserHome() {
                                                     borderRadius: '4px',
                                                     border: '1px solid #333',
                                                     backgroundColor: '#2c2c44',
-                                                    color: '#fff'
+                                                    color: '#fff',
+                                                    fontSize: '0.9rem'
                                                 }}
                                             >
                                                 <option value="">Select Country</option>
@@ -1050,7 +1081,8 @@ function UserHome() {
                                                     color: 'white',
                                                     border: 'none',
                                                     borderRadius: '4px',
-                                                    cursor: 'pointer'
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.9rem'
                                                 }}
                                             >
                                                 Save
@@ -1064,7 +1096,8 @@ function UserHome() {
                                                     color: '#e50914',
                                                     border: '1px solid #e50914',
                                                     borderRadius: '4px',
-                                                    cursor: 'pointer'
+                                                    cursor: 'pointer',
+                                                    fontSize: '0.9rem'
                                                 }}
                                             >
                                                 Cancel
@@ -1093,10 +1126,9 @@ function UserHome() {
                                 alignItems: 'center',
                                 borderRadius: '4px',
                                 fontSize: '0.9rem',
-                                '@media (min-width: 768px)': {
-                                    padding: '8px 20px',
-                                    gap: '15px',
-                                    fontSize: '1rem'
+                                '@media (max-width: 480px)': {
+                                    padding: '8px 10px',
+                                    fontSize: '0.8rem'
                                 }
                             }}
                         >
@@ -1113,8 +1145,8 @@ function UserHome() {
                                 boxShadow: '0 8px 16px rgba(0,0,0,0.3)',
                                 zIndex: 1000,
                                 marginTop: '10px',
-                                '@media (min-width: 768px)': {
-                                    width: '180px'
+                                '@media (max-width: 480px)': {
+                                    width: '130px'
                                 }
                             }}>
                                 {categories.map((category) => (
@@ -1126,8 +1158,9 @@ function UserHome() {
                                             borderBottom: '1px solid #3e3e5e',
                                             transition: 'background-color 0.2s',
                                             fontSize: '0.9rem',
-                                            '@media (min-width: 768px)': {
-                                                padding: '12px 20px'
+                                            '@media (max-width: 480px)': {
+                                                padding: '8px 10px',
+                                                fontSize: '0.8rem'
                                             }
                                         }}
                                         onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#3e3e5e'}
@@ -1162,12 +1195,15 @@ function UserHome() {
                                 position: 'relative',
                                 borderRadius: '8px',
                                 margin: '20px 0',
-                                minHeight: '50vh',
+                                minHeight: '60vh',
                                 display: 'flex',
                                 alignItems: 'center',
                                 overflow: 'hidden',
-                                '@media (min-width: 768px)': {
-                                    minHeight: '70vh'
+                                '@media (max-width: 768px)': {
+                                    minHeight: '50vh'
+                                },
+                                '@media (max-width: 480px)': {
+                                    minHeight: '40vh'
                                 }
                             }}
                             onMouseEnter={handleMouseEnter}
@@ -1227,20 +1263,20 @@ function UserHome() {
                             }}></div>
                             
                             <div style={{
-                                maxWidth: '100%',
-                                padding: '20px',
+                                maxWidth: '600px',
+                                padding: '30px',
                                 position: 'relative',
                                 zIndex: 3,
-                                '@media (min-width: 768px)': {
-                                    maxWidth: '600px',
-                                    padding: '40px'
+                                '@media (max-width: 768px)': {
+                                    padding: '20px',
+                                    maxWidth: '100%'
                                 }
                             }}>
                                 <h2 style={{ 
-                                    fontSize: '1.8rem', 
+                                    fontSize: '2rem', 
                                     marginBottom: '10px',
-                                    '@media (min-width: 768px)': {
-                                        fontSize: '2.5rem'
+                                    '@media (max-width: 768px)': {
+                                        fontSize: '1.5rem'
                                     }
                                 }}>
                                     {featuredMovie?.title || 'Featured Movie'}
@@ -1248,11 +1284,12 @@ function UserHome() {
                                 <div style={{ 
                                     display: 'flex', 
                                     justifyContent: 'space-between', 
-                                    marginBottom: '20px',
+                                    marginBottom: '15px',
                                     fontWeight: 'bold',
                                     fontSize: '0.9rem',
-                                    '@media (min-width: 768px)': {
-                                        fontSize: '1rem'
+                                    '@media (max-width: 480px)': {
+                                        flexDirection: 'column',
+                                        gap: '5px'
                                     }
                                 }}>
                                     <span>Rating: {featuredMovie?.vote_average?.toFixed(1) || 'N/A'}/10</span>
@@ -1261,22 +1298,19 @@ function UserHome() {
                                 <p style={{ 
                                     lineHeight: '1.6', 
                                     marginBottom: '20px',
-                                    fontSize: '0.95rem',
-                                    '@media (min-width: 768px)': {
-                                        fontSize: '1.1rem',
-                                        marginBottom: '25px'
+                                    fontSize: '1rem',
+                                    '@media (max-width: 768px)': {
+                                        fontSize: '0.9rem'
                                     }
                                 }}>
                                     {featuredMovie?.overview || 'Movie description will appear here.'}
                                 </p>
                                 <div style={{ 
-                                    display: 'grid',
-                                    gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-                                    gap: '10px',
-                                    '@media (min-width: 768px)': {
-                                        display: 'flex',
-                                        gap: '15px',
-                                        flexWrap: 'wrap'
+                                    display: 'flex', 
+                                    gap: '10px', 
+                                    flexWrap: 'wrap',
+                                    '@media (max-width: 480px)': {
+                                        justifyContent: 'center'
                                     }
                                 }}>
                                     <button 
@@ -1289,15 +1323,15 @@ function UserHome() {
                                             backgroundColor: '#e50914',
                                             color: 'white',
                                             border: 'none',
-                                            padding: '10px',
+                                            padding: '10px 20px',
                                             fontSize: '0.9rem',
                                             borderRadius: '4px',
                                             cursor: 'pointer',
                                             transition: 'background-color 0.3s',
                                             fontWeight: 'bold',
-                                            '@media (min-width: 768px)': {
-                                                padding: '12px 30px',
-                                                fontSize: '1rem'
+                                            '@media (max-width: 480px)': {
+                                                padding: '8px 15px',
+                                                fontSize: '0.8rem'
                                             }
                                         }}
                                     >
@@ -1310,7 +1344,7 @@ function UserHome() {
                                             backgroundColor: isFavorite(featuredMovie.id) ? '#e50914' : 'rgba(255,255,255,0.1)',
                                             color: 'white',
                                             border: `2px solid ${isFavorite(featuredMovie.id) ? '#e50914' : '#e50914'}`,
-                                            padding: '10px',
+                                            padding: '10px 20px',
                                             fontSize: '0.9rem',
                                             borderRadius: '4px',
                                             cursor: 'pointer',
@@ -1318,20 +1352,18 @@ function UserHome() {
                                             fontWeight: 'bold',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '5px',
+                                            gap: '8px',
                                             opacity: isFavoriteLoading[featuredMovie.id] ? 0.7 : 1,
-                                            '@media (min-width: 768px)': {
-                                                padding: '12px 30px',
-                                                fontSize: '1rem',
-                                                gap: '8px'
+                                            '@media (max-width: 480px)': {
+                                                padding: '8px 15px',
+                                                fontSize: '0.8rem'
                                             }
                                         }}
                                     >
                                         {isFavoriteLoading[featuredMovie.id] ? (
                                             <div style={{
-                                                width: '16px',
-                                                height: '16px',
+                                                width: '14px',
+                                                height: '14px',
                                                 border: '2px solid #fff',
                                                 borderTop: '2px solid transparent',
                                                 borderRadius: '50%',
@@ -1342,10 +1374,9 @@ function UserHome() {
                                                 <FontAwesomeIcon 
                                                     icon={isFavorite(featuredMovie.id) ? faSolidHeart : faHeart} 
                                                     color={isFavorite(featuredMovie.id) ? 'white' : '#e50914'}
+                                                    style={{ fontSize: '14px' }}
                                                 />
-                                                <span style={{ display: 'none', '@media (min-width: 768px)': { display: 'inline' } }}>
-                                                    {isFavorite(featuredMovie.id) ? 'FAVORITED' : 'ADD TO FAVORITES'}
-                                                </span>
+                                                {isFavorite(featuredMovie.id) ? 'FAVORITED' : 'ADD TO FAVORITES'}
                                             </>
                                         )}
                                     </button>
@@ -1356,7 +1387,7 @@ function UserHome() {
                                             backgroundColor: isCurrentlyWatching(featuredMovie.id) ? '#e50914' : 'rgba(255,255,255,0.1)',
                                             color: 'white',
                                             border: `2px solid ${isCurrentlyWatching(featuredMovie.id) ? '#e50914' : '#e50914'}`,
-                                            padding: '10px',
+                                            padding: '10px 20px',
                                             fontSize: '0.9rem',
                                             borderRadius: '4px',
                                             cursor: 'pointer',
@@ -1364,20 +1395,18 @@ function UserHome() {
                                             fontWeight: 'bold',
                                             display: 'flex',
                                             alignItems: 'center',
-                                            justifyContent: 'center',
-                                            gap: '5px',
+                                            gap: '8px',
                                             opacity: isWatchingLoading[featuredMovie.id] ? 0.7 : 1,
-                                            '@media (min-width: 768px)': {
-                                                padding: '12px 30px',
-                                                fontSize: '1rem',
-                                                gap: '8px'
+                                            '@media (max-width: 480px)': {
+                                                padding: '8px 15px',
+                                                fontSize: '0.8rem'
                                             }
                                         }}
                                     >
                                         {isWatchingLoading[featuredMovie.id] ? (
                                             <div style={{
-                                                width: '16px',
-                                                height: '16px',
+                                                width: '14px',
+                                                height: '14px',
                                                 border: '2px solid #fff',
                                                 borderTop: '2px solid transparent',
                                                 borderRadius: '50%',
@@ -1388,10 +1417,9 @@ function UserHome() {
                                                 <FontAwesomeIcon 
                                                     icon={faPlayCircle} 
                                                     color={isCurrentlyWatching(featuredMovie.id) ? 'white' : '#e50914'}
+                                                    style={{ fontSize: '14px' }}
                                                 />
-                                                <span style={{ display: 'none', '@media (min-width: 768px)': { display: 'inline' } }}>
-                                                    {isCurrentlyWatching(featuredMovie.id) ? 'WATCHING' : 'CURRENTLY WATCHING'}
-                                                </span>
+                                                {isCurrentlyWatching(featuredMovie.id) ? 'WATCHING' : 'CURRENTLY WATCHING'}
                                             </>
                                         )}
                                     </button>
@@ -1402,19 +1430,19 @@ function UserHome() {
                                                 backgroundColor: 'rgba(255,255,255,0.1)',
                                                 color: 'white',
                                                 border: '2px solid #e50914',
-                                                padding: '10px',
+                                                padding: '10px 20px',
                                                 fontSize: '0.9rem',
                                                 borderRadius: '4px',
                                                 cursor: 'pointer',
                                                 transition: 'background-color 0.3s',
                                                 fontWeight: 'bold',
-                                                '@media (min-width: 768px)': {
-                                                    padding: '12px 30px',
-                                                    fontSize: '1rem'
+                                                '@media (max-width: 480px)': {
+                                                    padding: '8px 15px',
+                                                    fontSize: '0.8rem'
                                                 }
                                             }}
                                         >
-                                            {showVideoGallery ? 'HIDE' : 'VIDEOS'}
+                                            {showVideoGallery ? 'HIDE VIDEOS' : 'SHOW ALL VIDEOS'}
                                         </button>
                                     )}
                                 </div>
@@ -1428,19 +1456,16 @@ function UserHome() {
                                 borderRadius: '8px',
                                 marginBottom: '20px',
                                 '@media (min-width: 768px)': {
-                                    padding: '20px',
-                                    marginBottom: '30px'
+                                    padding: '20px'
                                 }
                             }}>
                                 <h3 style={{ 
-                                    fontSize: '1.1rem', 
+                                    fontSize: '1.2rem', 
                                     marginBottom: '15px',
                                     borderBottom: '1px solid #333',
                                     paddingBottom: '8px',
                                     '@media (min-width: 768px)': {
-                                        fontSize: '1.3rem',
-                                        marginBottom: '20px',
-                                        paddingBottom: '10px'
+                                        fontSize: '1.3rem'
                                     }
                                 }}>
                                     Videos for {featuredMovie?.title}
@@ -1450,9 +1475,9 @@ function UserHome() {
                                     display: 'grid',
                                     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
                                     gap: '15px',
-                                    '@media (min-width: 768px)': {
-                                        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                                        gap: '20px'
+                                    '@media (max-width: 768px)': {
+                                        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+                                        gap: '10px'
                                     }
                                 }}>
                                     {featuredMovieVideos.map(video => (
@@ -1495,16 +1520,16 @@ function UserHome() {
                                                     justifyContent: 'center',
                                                     alignItems: 'center',
                                                     fontSize: '1.2rem',
-                                                    '@media (min-width: 768px)': {
-                                                        width: '50px',
-                                                        height: '50px',
-                                                        fontSize: '1.5rem'
+                                                    '@media (max-width: 768px)': {
+                                                        width: '30px',
+                                                        height: '30px',
+                                                        fontSize: '1rem'
                                                     }
                                                 }}>
                                                     ▶
                                                 </div>
                                             </div>
-                                            <div style={{ padding: '8px 5px', '@media (min-width: 768px)': { padding: '10px 5px' } }}>
+                                            <div style={{ padding: '8px 5px' }}>
                                                 <p style={{ 
                                                     margin: '0', 
                                                     fontWeight: 'bold',
@@ -1512,19 +1537,16 @@ function UserHome() {
                                                     overflow: 'hidden',
                                                     textOverflow: 'ellipsis',
                                                     fontSize: '0.9rem',
-                                                    '@media (min-width: 768px)': {
-                                                        fontSize: '1rem'
+                                                    '@media (max-width: 768px)': {
+                                                        fontSize: '0.8rem'
                                                     }
                                                 }}>
                                                     {video.name}
                                                 </p>
                                                 <p style={{
                                                     margin: '5px 0 0',
-                                                    fontSize: '0.75rem',
-                                                    color: '#aaa',
-                                                    '@media (min-width: 768px)': {
-                                                        fontSize: '0.8rem'
-                                                    }
+                                                    fontSize: '0.7rem',
+                                                    color: '#aaa'
                                                 }}>
                                                     {video.type}
                                                 </p>
@@ -1537,7 +1559,7 @@ function UserHome() {
                     </div>
                 )}
 
-                <section style={{ margin: '30px 0', '@media (min-width: 768px)': { margin: '40px 0' } }}>
+                <section style={{ margin: '30px 0', '@media (max-width: 768px)': { margin: '20px 0' } }}>
                     {renderSectionNav()}
                     {activeSection === 'Your Favorites' && renderMovieGrid(favorites, 'Your Favorites')}
                     {activeSection === 'Currently Watching' && renderMovieGrid(currentlyWatching, 'Currently Watching')}
@@ -1551,11 +1573,16 @@ function UserHome() {
                         justifyContent: 'space-between', 
                         alignItems: 'center',
                         margin: '20px 0 15px 0',
-                        '@media (min-width: 768px)': {
-                            margin: '30px 0 20px 0'
+                        '@media (max-width: 768px)': {
+                            margin: '15px 0 10px 0'
                         }
                     }}>
-                        <h3 style={{ fontSize: '1.2rem', '@media (min-width: 768px)': { fontSize: '1.5rem' } }}>
+                        <h3 style={{ 
+                            fontSize: '1.3rem',
+                            '@media (max-width: 768px)': {
+                                fontSize: '1.1rem'
+                            }
+                        }}>
                             {searchQuery ? `Search Results for "${searchQuery}"` : 'Featured Movies'}
                         </h3>
                         {!searchQuery && (
@@ -1574,12 +1601,12 @@ function UserHome() {
                                     padding: 0,
                                     fontSize: '0.9rem',
                                     opacity: page >= totalPages ? 0.7 : 1,
-                                    '@media (min-width: 768px)': {
-                                        fontSize: '1rem'
+                                    '@media (max-width: 768px)': {
+                                        fontSize: '0.8rem'
                                     }
                                 }}
                             >
-                                {loading ? 'Loading...' : 'See more'} <span style={{ fontSize: '1rem', '@media (min-width: 768px)': { fontSize: '1.2rem' } }}>→</span>
+                                {loading ? 'Loading...' : 'See more'} <span style={{ fontSize: '1rem' }}>→</span>
                             </button>
                         )}
                     </div>
@@ -1592,8 +1619,8 @@ function UserHome() {
                             textAlign: 'center',
                             padding: '30px',
                             color: '#aaa',
-                            '@media (min-width: 768px)': {
-                                padding: '40px'
+                            '@media (max-width: 768px)': {
+                                padding: '20px'
                             }
                         }}>
                             {searchQuery ? 
@@ -1609,8 +1636,8 @@ function UserHome() {
                             textAlign: 'center', 
                             padding: '15px',
                             fontStyle: 'italic',
-                            '@media (min-width: 768px)': {
-                                padding: '20px'
+                            '@media (max-width: 768px)': {
+                                padding: '10px'
                             }
                         }}>
                             Loading more movies...
