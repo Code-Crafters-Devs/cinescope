@@ -89,7 +89,7 @@ CineScope is a modern movie streaming platform designed to provide users with a 
 | Name          | Role                     |
 |---------------|--------------------------|
 | **Khulekani mtshali** | Frontend Lead            |
-| **Matimu**    | Backend Lead, DevOps     |
+| **Matimu Baloyi**    | Backend Lead, DevOps     |
 | **Luyanda**   | Database Architect       |
 | **Arise Dzamukeri**     | QA Lead, UI/UX Designer  |
 | **Dembe**     | UI/UX Designer           |
