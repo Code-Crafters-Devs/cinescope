@@ -99,8 +99,8 @@ CineScope is a modern movie streaming platform designed to provide users with a 
 
 ## 📅 Project Timeline
 
-**Start Date:** August 7, 2024  
-**End Date:** August 15, 2024  
+**Start Date:** April 7, 2025  
+**End Date:** April 18, 2025  
 
 ---
 
