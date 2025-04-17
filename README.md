@@ -23,66 +23,29 @@ CineScope is a modern movie streaming platform designed to provide users with a 
 
 ---
 
-## 🛠️ Tech Stack
-
-### Frontend
-- **Framework:** React with Next.js
-- **State Management:** Redux
-- **Styling:** Styled Components
-
-### Backend
-- **Framework:** Node.js with Express.js
-- **Authentication:** JWT + OAuth (Google/Facebook)
-- **AI Recommendations:** TensorFlow.js
-- **Streaming:** FFmpeg with CDN integration
-
-### Database
-- **Database:** PostgreSQL
-- **ORM:** TypeORM
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Architecture](#architecture)
+- [APIs and Methods](#-apis-and-methods)
+- [Data Model](#data-model)
+- [User Stories](#user-stories)
+- [Mockups](#-mockups)
+- [Team Work Division](#team-work-division)
+- [Admin Dashboard Features](#admin-dashboard-features)
+- [Tech Stack](#-tech-stack)
+- [Database Schema](#-database-schema)
+- [How to Run](#how-to-run)
+- [License](#license)
 
 ---
 
-## 📚 APIs and Methods
+## Project Overview
 
-### Internal APIs
-| Endpoint         | Method | Description                                   |
-|------------------|--------|-----------------------------------------------|
-| `/api/auth`      | POST   | User login/registration (JWT/OAuth)          |
-| `/api/movies`    | GET    | Fetch movie catalog (filter by genre/rating) |
-| `/api/watchlist` | POST   | Add/remove movie to user’s watchlist         |
-| `/api/recommend` | GET    | Fetch AI-powered recommendations             |
-| `/api/watchparty`| POST   | Create/schedule a watch party                |
+## 📅 Project Timeline
 
-### Third-Party APIs
-- **TMDb API:** Fetch movie metadata and search movies.
-- **Google OAuth:** Authenticate users via Google accounts.
+**Start Date:** April 7, 2025  
+**End Date:** April 18, 2025
 
----
-
-## 📊 Database Schema
-
-### Users
-- `user_id` (PK)
-- `email`, `password_hash`, `auth_provider`
-- `created_at`, `last_login`
-
-### Content
-- `content_id` (PK)
-- `title`, `description`, `release_date`
-- `poster_image`, `backdrop_image`
-- `runtime`, `age_rating`
-- `stream_url`, `trailer_url`
-- `average_rating`
-
-### WatchParties
-- `party_id` (PK)
-- `host_user_id` (FK)
-- `content_id` (FK)
-- `scheduled_time`
-- `party_status`
-- `invited_users`
-
----
 
 ## 👥 Contributors
 
@@ -94,76 +57,6 @@ CineScope is a modern movie streaming platform designed to provide users with a 
 | **Arise Rifuwo Dzamukeri**     | QA Lead, UI/UX Designer  |
 | **Dembe Makhari**     | UI/UX Designer           |
 | **Masingita Otis Maluleke** | Fullstack Developer      |
-
----
-
-## 📅 Project Timeline
-
-**Start Date:** April 7, 2025  
-**End Date:** April 18, 2025  
-
----
-
-## 🖼️ Mockups
-
-### Landing Page
-- Featured movie carousel
-- Genre filters
-- Login/Signup CTAs
-
-### Movie Details Page
-- Trailer preview
-- Cast info
-- Watch party button
-- Recommendations
-
-### User Dashboard
-- "Continue Watching" section
-- Watchlist
-- AI recommendations
-
----
-
-## 🛠️ How to Run
-
-### Backend
-1. Navigate to the backend directory:
-   ```bash
-   cd cinescope-backend
-
-   ```markdown
-# CineScope Movie Streaming Platform
-
-CineScope is a movie streaming platform designed to provide users with a seamless experience for discovering, watching, and sharing movies. Built with a robust PERN stack (PostgreSQL, Express, React, Node.js), CineScope integrates AI-powered recommendations, social watch parties, and adaptive streaming to deliver a modern movie streaming experience.
-
----
-
-## Table of Contents
-- [Project Overview](#project-overview)
-- [Architecture](#architecture)
-- [APIs and Methods](#apis-and-methods)
-- [Data Model](#data-model)
-- [User Stories](#user-stories)
-- [Mockups](#mockups)
-- [Team Work Division](#team-work-division)
-- [Admin Dashboard Features](#admin-dashboard-features)
-- [Tech Stack](#tech-stack)
-- [Database Schema](#database-schema)
-- [How to Run](#how-to-run)
-- [License](#license)
-
----
-
-## Project Overview
-
-**Timeline:** August 7, 2024 – August 15, 2024  
-**Team Members:**  
-- **Frontend Lead:** Khulekani  
-- **Backend Lead:** Matimu  
-- **Database Architect:** Luyanda  
-- **DevOps Engineer:** Matimu  
-- **QA Lead:** Arise  
-- **UI/UX Designers:** Arise, Khulekani, Dembe  
 
 ---
 
@@ -185,7 +78,7 @@ The platform is designed with a modular architecture to ensure scalability and m
 
 ---
 
-## APIs and Methods
+## 📚 APIs and Methods
 
 ### Internal APIs
 | Endpoint         | Method | Description                                   |
@@ -197,11 +90,8 @@ The platform is designed with a modular architecture to ensure scalability and m
 | `/api/watchparty`| POST   | Create/schedule a watch party                |
 
 ### Third-Party APIs
-- **TMDb API:**
-  - `GET /3/movie/{movie_id}`: Fetch movie metadata (cast, runtime, synopsis).
-  - `GET /3/search/movie`: Search movies by title/genre.
-- **Google OAuth:**
-  - `POST /oauth/v2/token`: Authenticate users via Google accounts.
+- **TMDb API:** Fetch movie metadata and search movies.
+- **Google OAuth:** Authenticate users via Google accounts.
 
 ---
 
@@ -231,7 +121,7 @@ The platform is designed with a modular architecture to ensure scalability and m
 
 ---
 
-## Mockups
+## 🖼️ Mockups
 
 ### Landing Page
 - Featured movie carousel
@@ -253,14 +143,14 @@ The platform is designed with a modular architecture to ensure scalability and m
 
 ## Team Work Division
 
-| Role              | Tasks                                   |
-|-------------------|-----------------------------------------|
+| Role              | Tasks                                    |
+|-------------------|------------------------------------------|
 | **Frontend Lead** | React components, Redux state management |
-| **Backend Lead**  | API development, TMDb integration      |
-| **Database Architect** | PostgreSQL schema design, TypeORM setup |
-| **DevOps Engineer** | CI/CD pipeline, AWS deployment       |
-| **QA Lead**       | Manual testing, bug tracking           |
-| **UI/UX Designer**| Mockups, styled components             |
+| **Backend Lead**  | API development, TMDb integration        |
+| **Database Architect** | MongoDB schema design, TypeORM setup     |
+| **DevOps Engineer** | CI/CD pipeline, AWS deployment           |
+| **QA Lead**       | Manual testing, bug tracking             |
+| **UI/UX Designer**| Mockups, styled components               |
 
 ---
 
@@ -274,18 +164,26 @@ The platform is designed with a modular architecture to ensure scalability and m
 
 ---
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-- **Frontend:** React, Next.js, Redux, Styled Components
-- **Backend:** Node.js, Express.js
-- **Database:** PostgreSQL with TypeORM
-- **Authentication:** JWT, OAuth (Google/Facebook)
+### Frontend
+- **Framework:** React with Next.js
+- **State Management:** Redux
+- **Styling:** Styled Components
+
+### Backend
+- **Framework:** Node.js with Express.js
+- **Authentication:** JWT + OAuth (Google/Facebook)
 - **AI Recommendations:** TensorFlow.js
-- **Streaming:** FFmpeg, CDN integration
+- **Streaming:** FFmpeg with CDN integration
+
+### Database
+- **Database:** MongoDB
+- **ORM:** TypeORM
 
 ---
 
-## Database Schema
+## 📊 Database Schema
 
 ### Users
 - `user_id` (PK)
@@ -310,7 +208,7 @@ The platform is designed with a modular architecture to ensure scalability and m
 
 ---
 
-## How to Run
+## 🛠️ How to Run
 
 ### Backend
 1. Navigate to the backend directory:
