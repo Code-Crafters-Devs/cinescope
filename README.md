@@ -19,7 +19,7 @@ CineScope is a modern movie streaming platform designed to provide users with a 
 
 ## 🚀 Deployment
 
-**Live Demo:** [CineScope Platform](https://cinescope-q79y.onrender.com/)
+**Live Demo:** [CineScope Platform](https://cinescope-frontend-y9ee.onrender.com/)
 
 ---
 
