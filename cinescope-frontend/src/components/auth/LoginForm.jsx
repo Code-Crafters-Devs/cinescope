@@ -212,17 +212,16 @@ function LoginForm() {
             }
           }}>
             Don't have an account?{' '}
-            <a
-              href="/register"
+            <span
               style={{
                 color: '#e50914',
                 fontWeight: 'bold',
-                textDecoration: 'none',
                 cursor: 'pointer'
               }}
+              onClick={() => navigate('/register')}
             >
               Register
-            </a>
+            </span>
           </p>
         </form>
       </div>
